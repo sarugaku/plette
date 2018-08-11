@@ -7,6 +7,12 @@ env:
   - PLETTE_INSTALL='.'
   - PLETTE_INSTALL='.[validation]'
 
+python:
+  - "3.6"
+  - "2.7"
+  - "3.5"
+  - "3.4"
+
 matrix:
   fast_finish: true
 
@@ -21,11 +27,7 @@ jobs:
     - stage: test
     - python: "3.7"
       dist: xenial
-      sudo: required
-    - python: "3.6"
-    - python: "2.7"
-    - python: "3.5"
-    - python: "3.4"
+      sudo: true
     - stage: packaging
       python: "3.6"
       install:
