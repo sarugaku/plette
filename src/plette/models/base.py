@@ -38,6 +38,9 @@ class DataView(object):
         self.validate(data)
         self._data = data
 
+    def __repr__(self):
+        return "{0}({1!r})".format(type(self).__name__, self._data)
+
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             raise TypeError("cannot compare {0!r} with {1!r}".format(
@@ -62,8 +65,14 @@ class DataViewCollection(DataView):
     Subclasses are expected to assign a class attribute `item_class` to specify
     how items should be coerced when accessed. The item class should conform to
     the `DataView` protocol.
+
+    You should not instantiate an instance from this class, but from one of its
+    subclasses instead.
     """
     item_class = None
+
+    def __repr__(self):
+        return "{0}({1!r})".format(type(self).__name__, self._data)
 
     def __len__(self):
         return len(self._data)
@@ -92,6 +101,9 @@ class DataViewMapping(DataViewCollection):
 
     def __iter__(self):
         return iter(self._data)
+
+    def items(self):
+        return [(k, self[k])for k in self._data]
 
 
 class DataViewSequence(DataViewCollection):
