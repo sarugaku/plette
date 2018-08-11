@@ -33,6 +33,8 @@ LOCKFILE_SECTIONS = {
     "develop": PackageCollection,
 }
 
+PIPFILE_SPEC_CURRENT = 6
+
 
 class Lockfile(DataView):
     """Representation of a Pipfile.lock.
@@ -55,6 +57,20 @@ class Lockfile(DataView):
             data = json.load(f)
         else:
             data = json.loads(f.read().decode(encoding))
+        return cls(data)
+
+    @classmethod
+    def with_meta_from(cls, pipfile):
+        data = {
+            "_meta": {
+                "hash": pipfile.get_hash()._data,
+                "pipfile-spec": PIPFILE_SPEC_CURRENT,
+                "requires": pipfile._data.get("requires", {}).copy(),
+                "sources": pipfile.sources._data.copy(),
+            },
+            "default": {},
+            "develop": {},
+        }
         return cls(data)
 
     def __getitem__(self, key):
