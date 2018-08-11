@@ -10,7 +10,7 @@ install:
   - "pip install --upgrade pip pytest pytest-xdist"
   - "pip install -e . "
 script:
-    - "py.test -v -n 8 tests/"
+    - "pytest -v -n 8 tests/"
 
 jobs:
   include:
@@ -26,7 +26,7 @@ jobs:
       python: "3.6"
       install:
         - "pip install --upgrade check-manifest readme-renderer"
-      script: 
+      script:
         - "python setup.py check -m -r -s"
     - stage: coverage
       python: "3.6"
