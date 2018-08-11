@@ -78,7 +78,7 @@ class Pipfile(DataView):
         data = {
             "_meta": {
                 "sources": self._data["source"],
-                "requires": self._data["requires"],
+                "requires": self._data.get("requires", {}),
             },
             "default": self._data["packages"],
             "develop": self._data["dev-packages"],
