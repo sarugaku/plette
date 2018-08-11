@@ -26,8 +26,10 @@ class Package(DataView):
         return super(Package, cls).validate({"__package__": data})
 
     def __getattr__(self, key):
-        if key == "version" and isinstance(self._data, six.string_types):
-            return self._data
+        if isinstance(self._data, six.string_types):
+            if key == "version":
+                return self._data
+            raise AttributeError(key)
         try:
             return self._data[key]
         except KeyError:
