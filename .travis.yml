@@ -3,15 +3,15 @@ sudo: false
 cache: pip
 dist: trusty
 
-env:
-  - PLETTE_INSTALL='.[validation]'
-  - PLETTE_INSTALL='.'
-
 python:
   - "3.6"
   - "2.7"
   - "3.5"
   - "3.4"
+
+env:
+  - PLETTE_INSTALL='.[validation]'
+  - PLETTE_INSTALL='.'
 
 matrix:
   fast_finish: true
