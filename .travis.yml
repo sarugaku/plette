@@ -3,12 +3,16 @@ sudo: false
 cache: pip
 dist: trusty
 
+env:
+  - PLETTE_INSTALL='.'
+  - PLETTE_INSTALL='.[validation]'
+
 matrix:
   fast_finish: true
 
 install:
   - "pip install --upgrade pip pytest pytest-xdist"
-  - "pip install -e . "
+  - "pip install -e $PLETTE_INSTALL"
 script:
     - "pytest -v -n 8 tests/"
 
@@ -32,6 +36,6 @@ jobs:
       python: "3.6"
       install:
         - "pip install --upgrade pip pytest pytest-cov pytest-timeout pytest-xdist"
-        - "pip install --upgrade -e ."
+        - "pip install --upgrade -e .[validation]"
       script:
         - "pytest --timeout 300 --cov=plette --cov-report=term-missing --cov-report=xml --cov-report=html tests"
