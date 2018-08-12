@@ -80,8 +80,8 @@ class Pipfile(DataView):
                 "sources": self._data["source"],
                 "requires": self._data.get("requires", {}),
             },
-            "default": self._data["packages"],
-            "develop": self._data["dev-packages"],
+            "default": self._data.get("packages", {}),
+            "develop": self._data.get("dev-packages", {}),
         }
         content = json.dumps(data, sort_keys=True, separators=(",", ":"))
         if isinstance(content, six.text_type):
