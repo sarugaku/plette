@@ -54,6 +54,12 @@ class DataView(object):
     def __setitem__(self, key, value):
         self._data[key] = value
 
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
     @classmethod
     def validate(cls, data):
         return validate(cls, data)
@@ -102,8 +108,14 @@ class DataViewMapping(DataViewCollection):
     def __iter__(self):
         return iter(self._data)
 
+    def keys(self):
+        return self._data.keys()
+
+    def values(self):
+        return [self[k] for k in self._data]
+
     def items(self):
-        return [(k, self[k])for k in self._data]
+        return [(k, self[k]) for k in self._data]
 
 
 class DataViewSequence(DataViewCollection):
