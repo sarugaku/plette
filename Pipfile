@@ -5,6 +5,7 @@ plette = { path = '.', extras = ['validation'], editable = true }
 invoke = '*'
 parver = '*'
 towncrier = '*'
+twine = '*'
 wheel = '*'
 pytest = '*'
 pytest-xdist = '*'
