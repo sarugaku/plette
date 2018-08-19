@@ -1,1 +1,0 @@
-Lock file dumps are now guarenteed to end with a trailing newline.

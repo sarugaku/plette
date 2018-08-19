@@ -1,1 +1,0 @@
-Fix `Lockfile.dump()` to work correctly on Python 2 when outputting to `io`.
