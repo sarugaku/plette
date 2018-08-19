@@ -82,6 +82,5 @@ def test_lockfile_dump_format(tmpdir):
     outpath = tmpdir.join("out.json")
     with outpath.open("w") as f:
         lock.dump(f)
-        f.write("\n")
 
     assert outpath.read() == content
