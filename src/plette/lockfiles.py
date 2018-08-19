@@ -24,7 +24,15 @@ class _LockFileEncoder(json.JSONEncoder):
         content = super(_LockFileEncoder, self).encode(obj)
         if not isinstance(content, six.text_type):
             content = content.decode("utf-8")
+        content += "\n"
         return content
+
+    def iterencode(self, obj):
+        for chunk in super(_LockFileEncoder, self).iterencode(obj):
+            if not isinstance(chunk, six.text_type):
+                chunk = chunk.decode("utf-8")
+            yield chunk
+        yield "\n"
 
 
 LOCKFILE_SECTIONS = {
