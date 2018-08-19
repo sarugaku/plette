@@ -1,0 +1,1 @@
+Fix AttributeError in `Lockfile.is_up_to_date()`

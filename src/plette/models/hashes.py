@@ -37,7 +37,7 @@ class Hash(DataView):
             raise TypeError("cannot compare Hash with {0!r}".format(
                 type(other).__name__,
             ))
-        return self._data == other.data
+        return self._data == other._data
 
     @property
     def name(self):
