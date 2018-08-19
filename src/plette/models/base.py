@@ -54,6 +54,9 @@ class DataView(object):
     def __setitem__(self, key, value):
         self._data[key] = value
 
+    def __delitem__(self, key):
+        del self._data[key]
+
     def get(self, key, default=None):
         try:
             return self[key]
