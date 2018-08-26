@@ -1,3 +1,0 @@
-Add slicing support to `DataViewSequence`. It is not possible to get, set, or
-delete a slice from it. For `__getitem__`, the return value’s type would match
-the sliced `DataViewSequence`.

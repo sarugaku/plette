@@ -1,1 +1,0 @@
-Implement `__delitem__` to delete entries from a data view.
