@@ -31,8 +31,7 @@ class DataView(object):
     """A "view" to a data.
 
     Validates the input mapping on creation. A subclass is expected to
-    provide a `__SCHEMA__` class attribute specifying a validator schema,
-    or a concrete Cerberus validator object.
+    provide a `__SCHEMA__` class attribute specifying a validator schema.
     """
     def __init__(self, data):
         self.validate(data)
@@ -69,11 +68,12 @@ class DataView(object):
 
 
 class DataViewCollection(DataView):
-    """A collection of dataview.
+    """A homogeneous collection of data views.
 
     Subclasses are expected to assign a class attribute `item_class` to specify
-    how items should be coerced when accessed. The item class should conform to
-    the `DataView` protocol.
+    the type of items it contains. This class will be used to coerce return
+    values when accessed. The item class should conform to the `DataView`
+    protocol.
 
     You should not instantiate an instance from this class, but from one of its
     subclasses instead.
@@ -99,7 +99,7 @@ class DataViewCollection(DataView):
 
 
 class DataViewMapping(DataViewCollection):
-    """A mapping of dataview.
+    """A mapping of data views.
 
     The keys are primitive values, while values are instances of `item_class`.
     """
@@ -122,7 +122,7 @@ class DataViewMapping(DataViewCollection):
 
 
 class DataViewSequence(DataViewCollection):
-    """A sequence of dataview.
+    """A sequence of data views.
 
     Each entry is an instance of `item_class`.
     """
