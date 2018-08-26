@@ -90,7 +90,7 @@ class DataViewCollection(DataView):
         return self.item_class(self._data[key])
 
     def __setitem__(self, key, value):
-        if isinstance(value, self.item_class):
+        if isinstance(value, DataView):
             value = value._data
         self._data[key] = value
 
@@ -133,3 +133,8 @@ class DataViewSequence(DataViewCollection):
 
     def __iter__(self):
         return (self.item_class(d) for d in self._data)
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return type(self)(self._data[key])
+        return super(DataViewSequence, self).__getitem__(key)
