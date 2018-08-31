@@ -57,7 +57,7 @@ def _copy_jsonsafe(value):
         return value
     if isinstance(value, collections_abc.Mapping):
         return {six.text_type(k): _copy_jsonsafe(v) for k, v in value.items()}
-    if isinstance(value, collections_abc.Collection):
+    if isinstance(value, collections_abc.Iterable):
         return [_copy_jsonsafe(v) for v in value]
     if value is None:   # This doesn't happen often for us.
         return None
