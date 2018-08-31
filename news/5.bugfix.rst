@@ -1,0 +1,1 @@
+Implement extra conversion logic when copying data from Pipfile to Lockfile models to ensure we get the right things in.

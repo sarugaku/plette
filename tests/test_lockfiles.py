@@ -2,7 +2,9 @@ from __future__ import unicode_literals
 
 import textwrap
 
-from plette import Lockfile
+import pytest
+
+from plette import Lockfile, Pipfile
 from plette.models import Package, SourceCollection
 
 
@@ -84,3 +86,37 @@ def test_lockfile_dump_format(tmpdir):
         lock.dump(f)
 
     assert outpath.read() == content
+
+
+def test_lockfile_from_pipfile_meta():
+    pipfile = Pipfile({
+        "source": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.org/simple",
+                "verify_ssl": True,
+            },
+        ],
+        "requires": {
+            "python_version": "3.7",
+        }
+    })
+    pipfile_hash_value = pipfile.get_hash().value
+    lockfile = Lockfile.with_meta_from(pipfile)
+
+    pipfile.requires._data["python_version"] = "3.8"
+    pipfile.sources.append({
+        "name": "devpi",
+        "url": "http://localhost/simple",
+        "verify_ssl": True,
+    })
+
+    assert lockfile.meta.hash._data == {"sha256": pipfile_hash_value}
+    assert lockfile.meta.requires._data == {"python_version": "3.7"}
+    assert lockfile.meta.sources._data == [
+        {
+            "name": "pypi",
+            "url": "https://pypi.org/simple",
+            "verify_ssl": True,
+        },
+    ]
