@@ -1,3 +1,12 @@
+0.2.1 (2018-08-31)
+==================
+
+Bug Fixes
+---------
+
+- Implement extra conversion logic when copying data from Pipfile to Lockfile models to ensure we get the right things in.  `#5 <https://github.com/sarugaku/plette/issues/5>`_
+
+
 0.2.0 (2018-08-26)
 ==================
 
