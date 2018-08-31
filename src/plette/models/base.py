@@ -138,3 +138,8 @@ class DataViewSequence(DataViewCollection):
         if isinstance(key, slice):
             return type(self)(self._data[key])
         return super(DataViewSequence, self).__getitem__(key)
+
+    def append(self, value):
+        if isinstance(value, DataView):
+            value = value._data
+        self._data.append(value)
