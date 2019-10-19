@@ -8,6 +8,17 @@ class ValidationError(ValueError):
     def __init__(self, value, validator):
         super(ValidationError, self).__init__(value)
         self.validator = validator
+        self.value = value
+
+    def __str__(self):
+        return '{}\n{}'.format(
+            self.value,
+            '\n'.join(
+                '{}: {}'.format(k, e)
+                for k, errors in self.validator.errors.items()
+                for e in errors
+            )
+        )
 
 
 VALIDATORS = {}
