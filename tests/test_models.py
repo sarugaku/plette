@@ -199,6 +199,7 @@ def test_del_slice(sources):
     ]
 
 
+@pytest.mark.skipif(cerberus is None, reason="Skip validation without Ceberus")
 def test_validation_error():
     data = {
         'name': 'test',
