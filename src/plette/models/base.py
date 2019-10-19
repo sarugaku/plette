@@ -14,7 +14,7 @@ VALIDATORS = {}
 
 
 def validate(cls, data):
-    if not cerberus:    # Skip validation if Cerberus is not available.
+    if not cerberus:  # Skip validation if Cerberus is not available.
         return
     schema = cls.__SCHEMA__
     key = id(schema)
@@ -22,7 +22,7 @@ def validate(cls, data):
         v = VALIDATORS[key]
     except KeyError:
         v = VALIDATORS[key] = cerberus.Validator(schema, allow_unknown=True)
-    if v.validate(dict(data), normalize=False):
+    if v.validate(data, normalize=False):
         return
     raise ValidationError(data, v)
 
@@ -33,6 +33,7 @@ class DataView(object):
     Validates the input mapping on creation. A subclass is expected to
     provide a `__SCHEMA__` class attribute specifying a validator schema.
     """
+
     def __init__(self, data):
         self.validate(data)
         self._data = data
@@ -42,9 +43,11 @@ class DataView(object):
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
-            raise TypeError("cannot compare {0!r} with {1!r}".format(
-                type(self).__name__, type(other).__name__,
-            ))
+            raise TypeError(
+                "cannot compare {0!r} with {1!r}".format(
+                    type(self).__name__, type(other).__name__
+                )
+            )
         return self._data == other._data
 
     def __getitem__(self, key):
@@ -78,6 +81,7 @@ class DataViewCollection(DataView):
     You should not instantiate an instance from this class, but from one of its
     subclasses instead.
     """
+
     item_class = None
 
     def __repr__(self):
@@ -103,6 +107,7 @@ class DataViewMapping(DataViewCollection):
 
     The keys are primitive values, while values are instances of `item_class`.
     """
+
     @classmethod
     def validate(cls, data):
         for d in data.values():
@@ -126,6 +131,7 @@ class DataViewSequence(DataViewCollection):
 
     Each entry is an instance of `item_class`.
     """
+
     @classmethod
     def validate(cls, data):
         for d in data:
