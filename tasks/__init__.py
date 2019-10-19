@@ -53,7 +53,10 @@ def bump_release(ctx, type_):
         raise ValueError(f'{type_} not in {REL_TYPES}')
     index = REL_TYPES.index(type_)
     prev_version = _read_version()
-    next_version = prev_version.base_version().bump_release(index)
+    if prev_version.is_prerelease:
+        next_version = prev_version.base_version()
+    else:
+        next_version = prev_version.base_version().bump_release(index)
     print(f'[bump] {prev_version} -> {next_version}')
     _write_version(next_version)
 
@@ -105,6 +108,8 @@ def release(ctx, type_, repo=None, prebump_to=PREBUMP):
     ctx.run(f'git tag -fa {this_version} -m "Version {this_version}"')
 
     if repo:
+        clean(ctx)
+        build(ctx)
         upload(ctx, repo=repo)
     else:
         print('[release] Missing --repo, skip uploading')

@@ -1,3 +1,18 @@
+0.2.3 (2019-10-19)
+==================
+
+Features
+--------
+
+- Show the error details in ``ValidationError``.  `#10 <https://github.com/sarugaku/plette/issues/10>`_
+  
+
+Bug Fixes
+---------
+
+- Ensure the data to be validated is converted to python dict.  `#8 <https://github.com/sarugaku/plette/issues/8>`_
+
+
 0.2.2 (2018-08-31)
 ==================
 
