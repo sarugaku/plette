@@ -18,7 +18,7 @@ Plette: Structured Pipfile and Pipfile.lock models.
     :target: http://plette.readthedocs.io/en/master/?badge=master
     :alt: Documentation Status
 
-Plette implements Pipfle and Pipfile.lock parsers, generators, and optional
+Plette implements Pipfile and Pipfile.lock parsers, generators, and optional
 validators to let the user work with them in a structured manner.
 
 
