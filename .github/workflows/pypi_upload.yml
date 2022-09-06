@@ -37,7 +37,7 @@ jobs:
 
       - name: Install latest tools for build
         run: |
-          python -m pip install build twine .
+          python -m pip install build twine invoke .
       - name: Build wheels
         run: |
           python -m build
@@ -45,16 +45,3 @@ jobs:
         # to upload to test pypi, pass --repository-url https://test.pypi.org/legacy/ and use secrets.TEST_PYPI_TOKEN
         run: |
           twine upload --verbose -u '__token__' -p '${{ secrets.PYPI_TOKEN }}' dist/*
-
-      - name: Pre-bump
-        run: |
-          git config --local user.name 'Github Action'
-          git config --local user.email action@github.com
-          inv bump-version -t dev
-          git commit -am "pre-bump"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: master
