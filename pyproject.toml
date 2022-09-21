@@ -1,14 +1,71 @@
 [build-system]
-requires = ['setuptools>=36.2.2', 'wheel>=0.28.0']
+requires = ["setuptools>=36.6.2", "wheel>=0.28.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plette"
+description = "Structured Pipfile and Pipfile.lock models."
+authors = [{name = "Tzu-ping Chung", email = "uranusjr@gmail.com"}]
+readme = "README.rst"
+license = {text = "ISC License"}
+keywords = []
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "License :: OSI Approved :: ISC License (ISCL)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+urls = {Homepage = "https://github.com/sarugaku/plette"}
+requires-python = ">=3.7"
+dependencies = ["tomlkit"]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+]
+validation = ["cerberus"]
+
+[tool.setuptools]
+include-package-data = false
+zip-safe = true
+
+[tool.distutils.bdist_wheel]
+universal = 1
+
+[tool.isort]
+atomic = true
+ignore_trailing_comma = true
+known_first_party = [
+    "plette",
+    "tests",
+]
+lines_after_imports = 2
+lines_between_types = 1
+multi_line_output = 5
+not_skip = ["__init__.py"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+norecursedirs = [".*", "build", "dist", "docs", "news", "tasks"]
+strict = true
+testpaths = ["tests/"]
 
 [tool.towncrier]
+directory = 'news/'
+filename = 'CHANGELOG.rst'
+issue_format = '`#{issue} <https://github.com/sarugaku/plette/issues/{issue}>`_'
 package = 'plette'
 package_dir = 'src'
-filename = 'CHANGELOG.rst'
-directory = 'news/'
-title_format = '{version} ({project_date})'
-issue_format = '`#{issue} <https://github.com/sarugaku/plette/issues/{issue}>`_'
 template = 'tasks/CHANGELOG.rst.jinja2'
+title_format = '{version} ({project_date})'
 
   [[tool.towncrier.type]]
   directory = 'feature'
