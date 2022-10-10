@@ -60,36 +60,33 @@ def test_source_as_data_expanded_partial(monkeypatch):
 
 
 def test_requires_python_version():
-    r = models.Requires({"python_version": "8.19"})
-    assert r.python_version == "8.19"
+    r = models.Requires({"python_version": "3.19"})
+    assert r.python_version == "3.19"
 
 
 def test_requires_python_version_no_full_version():
-    r = models.Requires({"python_version": "8.19"})
+    r = models.Requires({"python_version": "3.19"})
     with pytest.raises(AttributeError) as ctx:
         r.python_full_version
     assert str(ctx.value) == "python_full_version"
 
 
-def test_requires_python_full_version():
-    r = models.Requires({"python_full_version": "8.19"})
-    assert r.python_full_version == "8.19"
+def test_requires_python_full_version_match_regex():
+    r = models.Requires({"python_full_version": "3.19.1"})
+    assert r.python_full_version == "3.19.1"
 
 
-def test_requires_python_full_version_no_version():
-    r = models.Requires({"python_full_version": "8.19"})
-    with pytest.raises(AttributeError) as ctx:
-        r.python_version
-    assert str(ctx.value) == "python_version"
+def test_requires_python_fake_version():
+    with pytest.raises(models.base.ValidationError) as ctx:
+        models.Requires({"python_version": "8.19"})
+    assert str(ctx.value) == "{'python_version': '8.19'}\npython_version: value does not match regex '[2-4]\.[0-9]{1,2}'"
 
 
 @pytest.mark.skipif(cerberus is None, reason="Skip validation without Ceberus")
-def test_requires_no_duplicate_python_version():
-    data = {"python_version": "8.19", "python_full_version": "8.1.9"}
-    with pytest.raises(ValueError) as ctx:
-        models.Requires(data)
-    assert cerberus.errors.EXCLUDES_FIELD in ctx.value.validator._errors
-    assert len(ctx.value.validator._errors) == 2
+def test_allows_python_version_and_full():
+    r = models.Requires({"python_version": "3.1", "python_full_version": "3.1.9"})
+    assert r.python_full_version == "3.1.9"
+    assert r.python_version == "3.1"
 
 
 def test_package_str():

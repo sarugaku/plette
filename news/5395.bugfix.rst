@@ -1,0 +1,1 @@
+Change validation schema for Requires object to allow for both ``python_version`` and ``python_full_version``. Also added regex validation so that it must be a valid python version and python_version is like 3.10, and python_full_version is like 30.10.7
