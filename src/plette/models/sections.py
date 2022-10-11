@@ -23,13 +23,11 @@ class Requires(DataView):
     __SCHEMA__ = {
         "python_version": {
             "type": "string",
-            # matches 3.10 and 2.7 and 4.1
-            "regex": r"[2-4]\.[0-9]{1,2}",
+            "excludes": ["python_full_version"],
         },
         "python_full_version": {
             "type": "string",
-            # matches 3.10.10 and 2.7.1p1 and 4.1.9 
-            "regex": r"[2-4]\.[0-9]{1,2}\.[0-9p]{1,3}",
+            "excludes": ["python_version"],
         },
     }
 
