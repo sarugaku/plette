@@ -1,0 +1,1 @@
+Change validation schema for Requires object to allow for both ``python_version`` and ``python_full_version``.
