@@ -29,11 +29,13 @@ def test_hash_as_line():
 
 
 def test_source_from_data():
-    s = models.Source({
-        "name": "devpi",
-        "url": "https://$USER:$PASS@mydevpi.localhost",
-        "verify_ssl": False,
-    })
+    s = models.Source(
+        {
+            "name": "devpi",
+            "url": "https://$USER:$PASS@mydevpi.localhost",
+            "verify_ssl": False,
+        }
+    )
     assert s.name == "devpi"
     assert s.url == "https://$USER:$PASS@mydevpi.localhost"
     assert s.verify_ssl is False
@@ -41,21 +43,25 @@ def test_source_from_data():
 
 def test_source_as_data_expanded(monkeypatch):
     monkeypatch.setattr("os.environ", {"USER": "user", "PASS": "pa55"})
-    s = models.Source({
-        "name": "devpi",
-        "url": "https://$USER:$PASS@mydevpi.localhost",
-        "verify_ssl": False,
-    })
+    s = models.Source(
+        {
+            "name": "devpi",
+            "url": "https://$USER:$PASS@mydevpi.localhost",
+            "verify_ssl": False,
+        }
+    )
     assert s.url_expanded == "https://user:pa55@mydevpi.localhost"
 
 
 def test_source_as_data_expanded_partial(monkeypatch):
     monkeypatch.setattr("os.environ", {"USER": "user"})
-    s = models.Source({
-        "name": "devpi",
-        "url": "https://$USER:$PASS@mydevpi.localhost",
-        "verify_ssl": False,
-    })
+    s = models.Source(
+        {
+            "name": "devpi",
+            "url": "https://$USER:$PASS@mydevpi.localhost",
+            "verify_ssl": False,
+        }
+    )
     assert s.url_expanded == "https://user:$PASS@mydevpi.localhost"
 
 
@@ -84,12 +90,10 @@ def test_requires_python_full_version_no_version():
 
 
 @pytest.mark.skipif(cerberus is None, reason="Skip validation without Ceberus")
-def test_requires_no_duplicate_python_version():
-    data = {"python_version": "8.19", "python_full_version": "8.1.9"}
-    with pytest.raises(ValueError) as ctx:
-        models.Requires(data)
-    assert cerberus.errors.EXCLUDES_FIELD in ctx.value.validator._errors
-    assert len(ctx.value.validator._errors) == 2
+def test_allows_python_version_and_full():
+    r = models.Requires({"python_version": "8.1", "python_full_version": "8.1.9"})
+    assert r.python_version == "8.1"
+    assert r.python_full_version == "8.1.9"
 
 
 def test_package_str():
@@ -114,46 +118,52 @@ HASH = "9aaf3dbaf8c4df3accd4606eb2275d3b91c9db41be4fd5a97ecc95d79a12cfe6"
 
 
 def test_meta():
-    m = models.Meta({
-        "hash": {"sha256": HASH},
-        "pipfile-spec": 6,
-        "requires": {},
-        "sources": [
-            {
-                "name": "pypi",
-                "url": "https://pypi.org/simple",
-                "verify_ssl": True,
-            },
-        ],
-    })
+    m = models.Meta(
+        {
+            "hash": {"sha256": HASH},
+            "pipfile-spec": 6,
+            "requires": {},
+            "sources": [
+                {
+                    "name": "pypi",
+                    "url": "https://pypi.org/simple",
+                    "verify_ssl": True,
+                },
+            ],
+        }
+    )
     assert m.hash.name == "sha256"
 
 
 @pytest.fixture()
 def sources():
-    return models.SourceCollection([
-        {
-            "name": "pypi",
-            "url": "https://pypi.org/simple",
-            "verify_ssl": True,
-        },
-        {
-            "name": "devpi",
-            "url": "http://127.0.0.1:$DEVPI_PORT/simple",
-            "verify_ssl": True,
-        },
-    ])
+    return models.SourceCollection(
+        [
+            {
+                "name": "pypi",
+                "url": "https://pypi.org/simple",
+                "verify_ssl": True,
+            },
+            {
+                "name": "devpi",
+                "url": "http://127.0.0.1:$DEVPI_PORT/simple",
+                "verify_ssl": True,
+            },
+        ]
+    )
 
 
 def test_get_slice(sources):
     sliced = sources[:1]
     assert isinstance(sliced, models.SourceCollection)
     assert len(sliced) == 1
-    assert sliced[0] == models.Source({
-        "name": "pypi",
-        "url": "https://pypi.org/simple",
-        "verify_ssl": True,
-    })
+    assert sliced[0] == models.Source(
+        {
+            "name": "pypi",
+            "url": "https://pypi.org/simple",
+            "verify_ssl": True,
+        }
+    )
 
 
 def test_set_slice(sources):
@@ -201,13 +211,10 @@ def test_del_slice(sources):
 
 @pytest.mark.skipif(cerberus is None, reason="Skip validation without Ceberus")
 def test_validation_error():
-    data = {
-        'name': 'test',
-        'verify_ssl': 1
-    }
+    data = {"name": "test", "verify_ssl": 1}
     with pytest.raises(models.base.ValidationError) as exc_info:
         models.Source.validate(data)
 
     error_message = str(exc_info.value)
-    assert 'verify_ssl: must be of boolean type' in error_message
-    assert 'url: required field' in error_message
+    assert "verify_ssl: must be of boolean type" in error_message
+    assert "url: required field" in error_message
