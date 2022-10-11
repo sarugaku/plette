@@ -1,1 +1,0 @@
-Exclude ``pipenv`` section from ``Pipfile`` hash generation as this was a regression caused by named package categories.

@@ -17,7 +17,7 @@ INIT_PY = ROOT.joinpath('src', PACKAGE_NAME, '__init__.py')
 def clean(ctx):
     """Clean previously built package artifacts.
     """
-    ctx.run(f'python setup.py clean')
+    ctx.run('python setup.py clean')
     dist = ROOT.joinpath('dist')
     print(f'[clean] Removing {dist}')
     if dist.exists():
@@ -53,10 +53,11 @@ def bump_release(ctx, type_):
         raise ValueError(f'{type_} not in {REL_TYPES}')
     index = REL_TYPES.index(type_)
     prev_version = _read_version()
+    import pdb; pdb.set_trace()
     if prev_version.is_prerelease:
         next_version = prev_version.base_version()
     else:
-        next_version = prev_version.base_version().bump_release(index)
+        next_version = prev_version.base_version().bump_release(index=index)
     print(f'[bump] {prev_version} -> {next_version}')
     _write_version(next_version)
 

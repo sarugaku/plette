@@ -1,3 +1,17 @@
+0.4.2 (2022-10-11)
+==================
+
+Bug Fixes
+---------
+
+- Add logic to populate the ``default`` and ``develop`` package sections from the ``Pipfile`` to ``with_meta_from``.  `#26 <https://github.com/sarugaku/plette/issues/26>`_
+  
+- Change validation schema for Requires object to allow for both ``python_version`` and ``python_full_version``.  `#5395 <https://github.com/sarugaku/plette/issues/5395>`_
+
+0.4.1 (2022-10-10)
+==================
+
+- Exclude ``pipenv`` section from ``Pipfile`` hash generation as this was a regression caused by named package categories.  `#29 <https://github.com/sarugaku/plette/issues/29>`_
 0.4.0 (2022-10-08)
 ==================
 
