@@ -19,13 +19,11 @@ if VERSION is None:
     raise EnvironmentError('failed to read version')
 
 
-# Put everything in setup.cfg, except those that don't actually work?
 setup(
     # These really don't work.
     package_dir={'': 'src'},
     packages=find_packages('src'),
 
-    # I don't know how to specify an empty key in setup.cfg.
     package_data={
         '': ['LICENSE*', 'README*'],
     },
