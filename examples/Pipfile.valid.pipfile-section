@@ -1,0 +1,8 @@
+[pipenv]
+install_search_all_sources = true
+
+# extras should be a list
+[packages]
+msal = {version="==1.20.0", extras=["broker"]}
+parver = '*'
+

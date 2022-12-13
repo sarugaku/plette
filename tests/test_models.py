@@ -114,6 +114,18 @@ def test_package_wrong_key():
     assert str(ctx.value) == "version"
 
 
+@pytest.mark.skipif(cerberus is None, reason="Skip validation without Ceberus")
+def test_package_with_wrong_extras():
+    with pytest.raises(models.base.ValidationError):
+        p = models.Package({"version": "==1.20.0", "extras": "broker"})
+
+
+@pytest.mark.skipif(cerberus is None, reason="Skip validation without Ceberus")
+def test_package_with_extras():
+    p = models.Package({"version": "==1.20.0", "extras": ["broker", "tests"]})
+    assert p.extras == ['broker', 'tests']
+
+
 HASH = "9aaf3dbaf8c4df3accd4606eb2275d3b91c9db41be4fd5a97ecc95d79a12cfe6"
 
 
