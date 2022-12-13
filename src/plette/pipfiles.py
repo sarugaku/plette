@@ -4,7 +4,7 @@ import json
 import tomlkit
 
 from .models import (
-    DataView, Hash, Requires,
+    DataView, Hash, Requires, PipfileSection,
     PackageCollection, ScriptCollection, SourceCollection,
 )
 
@@ -15,6 +15,7 @@ PIPFILE_SECTIONS = {
     "dev-packages": PackageCollection,
     "requires": Requires,
     "scripts": ScriptCollection,
+    "pipfile":  PipfileSection
 }
 
 DEFAULT_SOURCE_TOML = """\
