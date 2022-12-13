@@ -1,0 +1,3 @@
+[packages]
+parver = '*'
+foo = {path = ".", editable = true, extras = ["tests", "dev"]}
