@@ -16,5 +16,10 @@ from .scripts import Script
 from .sources import Source
 
 from .sections import (
-    Meta, Requires, PackageCollection, ScriptCollection, SourceCollection,
+    Meta,
+    Requires,
+    PackageCollection,
+    PipfileSection,
+    ScriptCollection,
+    SourceCollection,
 )
