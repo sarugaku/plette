@@ -24,7 +24,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 """
 
-
 class Pipfile(DataView):
     """Representation of a Pipfile.
     """
@@ -41,6 +40,11 @@ class Pipfile(DataView):
             if key not in data:
                 continue
             klass.validate(data[key])
+
+        package_categories = set(data.keys()) - set(PIPFILE_SECTIONS.keys())        
+
+        for category in package_categories:
+            PackageCollection.validate(data[category])
 
     @classmethod
     def load(cls, f, encoding=None):

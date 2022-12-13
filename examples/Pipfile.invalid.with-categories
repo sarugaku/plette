@@ -2,4 +2,4 @@
 plette = { path = '.', extras = ['validation'], editable = true }
 
 [documentation]
-sphinx = "*"
+msal = {version= "==1.20.0", extras = "broker"}
