@@ -1,0 +1,5 @@
+[packages]
+plette = { path = '.', extras = ['validation'], editable = true }
+
+[documentaions]
+sphinx = "*"
