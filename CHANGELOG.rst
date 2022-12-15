@@ -1,3 +1,9 @@
+0.4.4 (2022-12-15)
+==================
+
+- Add validation for pipenv section
+- Add more tests
+
 0.4.3 (2022-12-13)
 ==================
 
