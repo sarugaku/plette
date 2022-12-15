@@ -129,3 +129,11 @@ class Meta(DataView):
     @sources.setter
     def sources(self, value):
         self["sources"] = value
+
+
+class Pipenv(DataView):
+    """Represent the [pipenv] section in Pipfile"""
+
+    __SCHEMA__ = {
+        "allow_prereleases": {"type": "boolean", "required": False},
+    }

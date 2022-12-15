@@ -19,6 +19,7 @@ from .sections import (
     Meta,
     Requires,
     PackageCollection,
+    Pipenv,
     PipfileSection,
     ScriptCollection,
     SourceCollection,
