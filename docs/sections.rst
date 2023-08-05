@@ -111,5 +111,5 @@ The automatically generated source contains the following data
 .. warning::
 
     You *can* delete either the automatically generated source, or the source
-    section itself from the model after it is aloaded. Plette assumes you know
+    section itself from the model after it is loaded. Plette assumes you know
     what you’re doing.
