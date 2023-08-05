@@ -16,12 +16,6 @@ This method takes a file-like object to load the file::
     >>> with open('Pipfile', encoding='utf-8') as f:
     ...     pipfile = plette.Pipfile.load(f)
 
-.. warning::
-
-    This will not work for Python 2, since the loader is very strict about
-    file encodings, and only accepts a Unicode file. You are required to use
-    ``io.open()`` to open the file instead.
-
 For manipulating a binary file (maybe because you want to interact with a
 temporary file created via ``tempfile.TemporaryFile()``), ``load()`` accepts
 a second, optional argument::
