@@ -50,5 +50,5 @@ implementation, i.e.::
 an optional ``encoding`` argument. If set, the output would be in bytes,
 encoded with the specified encoding.
 
-Both the Pipfile and Pipfile.lock are guarenteed to be dumped with a trailing
+Both the Pipfile and Pipfile.lock are guaranteed to be dumped with a trailing
 newline at the end.
