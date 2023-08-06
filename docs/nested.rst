@@ -8,17 +8,17 @@ type conversion for you. Sometimes, however, you would want to peek under the
 hood. This chapter discusses how you can handle those structures yourself.
 
 The ``plette.models`` submodule contains definitions of nested structures in
-Pipfile and Pipfile.lock, such as indivisual entries in ``[packages]``,
+Pipfile and Pipfile.lock, such as individual entries in ``[packages]``,
 ``[dev-packages]``, and ``lockfile['_meta']``.
 
 
 The Data View
 =============
 
-Every non-scalar valuea you get from Plette (e.g. sequence, mapping) is
+Every non-scalar value you get from Plette (e.g. sequence, mapping) is
 represented as a `DataView`, or one of its subclasses. This class is simply a
 wrapper around the basic collection class, and you can access the underlying
-data strucuture via the ``_data`` attribute::
+data structure via the ``_data`` attribute::
 
     >>> import plette.models
     >>> source = plette.models.Source({
