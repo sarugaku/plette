@@ -1,45 +1,35 @@
+# pylint: disable=missing-docstring
+# pylint: disable=too-few-public-methods
+
 import os
 
-from .base import DataView
+from dataclasses import dataclass
 
 
-class Source(DataView):
+@dataclass
+class Source:
     """Information on a "simple" Python package index.
 
     This could be PyPI, or a self-hosted index server, etc. The server
     specified by the `url` attribute is expected to provide the "simple"
     package API.
     """
-    __SCHEMA__ = {
-        "name": {"type": "string", "required": True},
-        "url": {"type": "string", "required": True},
-        "verify_ssl": {"type": "boolean", "required": True},
-    }
+    def __post_init__(self):
+        """Run validation methods if declared.
+        The validation method can be a simple check
+        that raises ValueError or a transformation to
+        the field value.
+        The validation is performed by calling a function named:
+            `validate_<field_name>(self, value, field) -> field.type`
+        """
+        for name, field in self.__dataclass_fields__.items():
+            if (method := getattr(self, f"validate_{name}", None)):
+                setattr(self, name, method(getattr(self, name), field=field))
 
-    @property
-    def name(self):
-        return self._data["name"]
-
-    @name.setter
-    def name(self, value):
-        self._data["name"] = value
-
-    @property
-    def url(self):
-        return self._data["url"]
-
-    @url.setter
-    def url(self, value):
-        self._data["url"] = value
-
-    @property
-    def verify_ssl(self):
-        return self._data["verify_ssl"]
-
-    @verify_ssl.setter
-    def verify_ssl(self, value):
-        self._data["verify_ssl"] = value
+    name: str
+    url: str
+    verify_ssl: bool
 
     @property
     def url_expanded(self):
-        return os.path.expandvars(self._data["url"])
+        return os.path.expandvars(self.url)
