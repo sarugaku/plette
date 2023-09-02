@@ -1,6 +1,50 @@
 from .base import DataView
 
+from dataclasses import dataclass
 
+@dataclass
+class NewHash:
+    
+    def __post_init__(self):
+        """Run validation methods if declared.
+        The validation method can be a simple check
+        that raises ValueError or a transformation to
+        the field value.
+        The validation is performed by calling a function named:
+            `validate_<field_name>(self, value, field) -> field.type`
+        """
+        for name, field in self.__dataclass_fields__.items():
+            if (method := getattr(self, f"validate_{name}", None)):
+                setattr(self, name, method(getattr(self, name), field=field))
+    name: str
+    value: str
+
+    @classmethod
+    def from_hash(cls, ins):
+        """Interpolation to the hash result of `hashlib`.
+        """
+        return cls({ins.name: ins.hexdigest()})
+
+    @classmethod
+    def from_line(cls, value):
+        try:
+            name, value = value.split(":", 1)
+        except ValueError:
+            name = "sha256"
+        return cls(**{name, value})
+
+    def __eq__(self, other):
+        if not isinstance(other, Hash):
+            raise TypeError("cannot compare Hash with {0!r}".format(
+                type(other).__name__,
+            ))
+        return self._data == other._data
+
+    def as_line(self):
+        return "{0[0]}:{0[1]}".format(next(iter(self._data.items())))
+    
+
+    
 class Hash(DataView):
     """A hash.
     """
@@ -30,7 +74,7 @@ class Hash(DataView):
             name, value = value.split(":", 1)
         except ValueError:
             name = "sha256"
-        return cls({name: value})
+        return cls(**{name, value})
 
     def __eq__(self, other):
         if not isinstance(other, Hash):

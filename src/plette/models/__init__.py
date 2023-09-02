@@ -6,7 +6,7 @@ __all__ = [
 ]
 
 from .base import (
-    DataView, DataViewCollection, DataViewMapping, DataViewSequence,
+    DataView, NewDataView, DataViewCollection, DataViewMapping, DataViewSequence,
     validate, ValidationError,
 )
 
@@ -17,6 +17,7 @@ from .sources import Source
 
 from .sections import (
     Meta,
+    NewMeta,
     Requires,
     PackageCollection,
     Pipenv,

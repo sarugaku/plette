@@ -3,8 +3,7 @@ import numbers
 
 import collections.abc as collections_abc
 
-
-from .models import DataView, Meta, PackageCollection
+from .models import DataView, NewMeta as Meta, PackageCollection
 
 
 class _LockFileEncoder(json.JSONEncoder):
@@ -66,9 +65,9 @@ class Lockfile(DataView):
         super(Lockfile, cls).validate(data)
         for key, value in data.items():
             if key == "_meta":
-                Meta.validate(value)
+                Meta(**{k.replace('-', '_'):v for k,v in value.items()})
             else:
-                PackageCollection.validate(value)
+                PackageCollection(value)
 
     @classmethod
     def load(cls, f, encoding=None):

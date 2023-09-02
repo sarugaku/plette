@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from .base import DataView, DataViewMapping, DataViewSequence
 from .hashes import Hash
 from .packages import Package
@@ -16,6 +18,26 @@ class ScriptCollection(DataViewMapping):
 class SourceCollection(DataViewSequence):
     item_class = Source
 
+@dataclass
+class SourceCollection:
+
+    sources: list
+
+    def __post_init__(self):
+        """Run validation methods if declared.
+        The validation method can be a simple check
+        that raises ValueError or a transformation to
+        the field value.
+        The validation is performed by calling a function named:
+            `validate_<field_name>(self, value, field) -> field.type`
+        """
+        for name, field in self.__dataclass_fields__.items():
+            if (method := getattr(self, f"validate_{name}", None)):
+                setattr(self, name, method(getattr(self, name), field=field))
+
+    def validate_sources(self, value, **kwargs):
+        for v in value:
+            Source(**v)
 
 class Requires(DataView):
     """Representation of the `[requires]` section in a Pipfile."""
@@ -60,6 +82,36 @@ class PipfileSection(DataView):
     @classmethod
     def validate(cls, data):
         pass
+
+@dataclass
+class NewMeta:
+
+    hash: dict
+    pipfile_spec: int
+    requires: dict
+    sources: list
+
+    def __post_init__(self):
+        """Run validation methods if declared.
+        The validation method can be a simple check
+        that raises ValueError or a transformation to
+        the field value.
+        The validation is performed by calling a function named:
+            `validate_<field_name>(self, value, field) -> field.type`
+        """
+        for name, field in self.__dataclass_fields__.items():
+            if (method := getattr(self, f"validate_{name}", None)):
+                setattr(self, name, method(getattr(self, name), field=field))
+
+    def validate_hash(self, value, **kwargs):
+        Hash(value)
+
+    def validate_requires(self, value, **kwargs):
+        Requires(value)
+
+    def validate_sources(self, value, **kwargs):
+        SourceCollection(value)
+
 
 class Meta(DataView):
     """Representation of the `_meta` section in a Pipfile.lock."""

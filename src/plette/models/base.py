@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 try:
     import cerberus
 except ImportError:
@@ -38,6 +39,52 @@ def validate(cls, data):
     raise ValidationError(data, v)
 
 
+class NewModel:
+    def __post_init__(self):
+        """Run validation methods if declared.
+        The validation method can be a simple check
+        that raises ValueError or a transformation to
+        the field value.
+        The validation is performed by calling a function named:
+            `validate_<field_name>(self, value, field) -> field.type`
+        """
+        for name, field in self.__dataclass_fields__.items():
+            if (method := getattr(self, f"validate_{name}", None)):
+                setattr(self, name, method(getattr(self, name), field=field))
+
+@dataclass
+class NewDataView(NewModel):
+    
+    _data: dict
+
+    def __repr__(self):
+        return "{0}({1!r})".format(type(self).__name__, self._data)
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                "cannot compare {0!r} with {1!r}".format(
+                    type(self).__name__, type(other).__name__
+                )
+            )
+        return self._data == other._data
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def __setitem__(self, key, value):
+        self._data[key] = value
+
+    def __delitem__(self, key):
+        del self._data[key]
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+       
 class DataView(object):
     """A "view" to a data.
 

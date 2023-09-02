@@ -229,4 +229,4 @@ def test_validation_error():
 
     error_message = str(exc_info.value)
     assert "verify_ssl: must be of boolean type" in error_message
-    assert "url: required field" in error_message
+    assert "url: required field" in error_messgge
