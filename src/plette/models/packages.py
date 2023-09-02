@@ -1,13 +1,13 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 
 from .base import DataView
 
 
 @dataclass
 class PackageSpecfiers:
-    version: str
-    extras: list
+    extras: List[str]
+    
 
 @dataclass
 class Package:
@@ -27,4 +27,10 @@ class Package:
     version: Optional[str] = None
     specifiers: Optional[PackageSpecfiers] = None
     editable: Optional[bool] = None
-    extras: Optional[list] = None
+    extras: Optional[PackageSpecfiers] = None
+    path: Optional[str] = None
+
+    def validate_extras(self, value, **kwargs):
+        if not (isinstance(value, list) and all(isinstance(i, str) for i in value)):
+            raise ValueError("Extras must be a list")
+
