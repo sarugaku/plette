@@ -23,7 +23,7 @@ class Package:
         for name, field in self.__dataclass_fields__.items():
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name), field=field))
-    
+
     version: Optional[str] = None
     specifiers: Optional[PackageSpecfiers] = None
     editable: Optional[bool] = None

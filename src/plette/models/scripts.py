@@ -1,36 +1,34 @@
 import re
 import shlex
 
+
+from dataclasses import dataclass
+from typing import List, Union
+
 from .base import DataView
 
+@dataclass(init=False)
+class Script:
 
-class Script(DataView):
-    """Parse a script line (in Pipfile's [scripts] section).
+    def __post_init__(self):
+        for name, field in self.__dataclass_fields__.items():
+            if (method := getattr(self, f"validate_{name}", None)):
+                setattr(self, name, method(getattr(self, name), field=field))
 
-    This always works in POSIX mode, even on Windows.
-    """
-    # This extra layer is intentional. Cerberus does not allow validation of
-    # non-mapping inputs, so we wrap this in a top-level key. The Script model
-    # class implements extra hacks to make this work.
-    __SCHEMA__ = {
-        "__script__": {
-            "oneof_type": ["string", "list"], "required": True, "empty": False,
-            "schema": {"type": "string"},
-        },
-    }
+    script:  Union[str, List[str]]
 
-    def __init__(self, data):
-        super(Script, self).__init__(data)
-        if isinstance(data, str):
-            data = shlex.split(data)
-        self._parts = [data[0]]
-        self._parts.extend(data[1:])
+    def __init__(self, script):
 
-    @classmethod
-    def validate(cls, data):
-        # HACK: Make this validatable for Cerberus. See comments in validation
-        # side for more information.
-        return super(Script, cls).validate({"__script__": data})
+        if isinstance(script, str):
+            script = shlex.split(script)
+        self._parts = [script[0]]
+        self._parts.extend(script[1:])
+
+    def validate_script(self, value, **kwargs):
+        if not (isinstance(value, str) or \
+                (isinstance(value, list) and all(isinstance(i, str) for i in value))
+                ):
+            raise ValueError("script must be a string or a list of strings")
 
     def __repr__(self):
         return "Script({0!r})".format(self._parts)
