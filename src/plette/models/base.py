@@ -84,7 +84,7 @@ class NewDataView(NewModel):
         except KeyError:
             return default
 
-       
+
 class DataView(object):
     """A "view" to a data.
 

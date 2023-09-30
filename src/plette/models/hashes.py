@@ -1,10 +1,11 @@
+from dataclasses import dataclass
+
 from .base import DataView
 
-from dataclasses import dataclass
 
 @dataclass
 class Hash:
-    
+
     def __post_init__(self):
         """Run validation methods if declared.
         The validation method can be a simple check
@@ -18,7 +19,7 @@ class Hash:
                 setattr(self, name, method(getattr(self, name), field=field))
     name: str
     value: str
-    
+
     def validate_name(self, value, **kwargs):
         if not isinstance(value, str):
             raise ValueError("Hash.name must be a string")
@@ -47,9 +48,7 @@ class Hash:
 
     def __eq__(self, other):
         if not isinstance(other, Hash):
-            raise TypeError("cannot compare Hash with {0!r}".format(
-                type(other).__name__,
-            ))
+            raise TypeError(f"cannot compare Hash with {type(other).__name__!r}")
         return self.value == other.value
 
     def as_line(self):
