@@ -1,6 +1,7 @@
+# pylint: disable=missing-module-docstring,missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=no-member
 from dataclasses import dataclass
-
-from .base import DataView
 
 
 @dataclass
@@ -20,13 +21,13 @@ class Hash:
     name: str
     value: str
 
-    def validate_name(self, value, **kwargs):
+    def validate_name(self, value):
         if not isinstance(value, str):
             raise ValueError("Hash.name must be a string")
 
         return value
 
-    def validate_value(self, value, **kwargs):
+    def validate_value(self, value):
         if not isinstance(value, str):
             raise ValueError("Hash.value must be a string")
 
@@ -40,6 +41,7 @@ class Hash:
 
     @classmethod
     def from_line(cls, value):
+        """parse a dependecy line and create a Hash object"""
         try:
             name, value = value.split(":", 1)
         except ValueError:
