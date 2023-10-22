@@ -1,10 +1,8 @@
-from __future__ import unicode_literals
-
 import textwrap
 
 import pytest
 
-from plette import Lockfile, NewLockfile, Pipfile
+from plette import Lockfile, Pipfile
 from plette.models import Package, SourceCollection
 
 
@@ -36,7 +34,8 @@ def test_lockfile_load(tmpdir):
         }
         """,
     ).replace("____hash____", HASH))
-    lock = NewLockfile.load(fi)
+    lock = Lockfile.load(fi)
+    import pdb; pdb.set_trace()
     assert lock.meta.sources == SourceCollection([
         {
             'url': 'https://pypi.org/simple',

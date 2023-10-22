@@ -1,12 +1,7 @@
-
-import hashlib
-
-import pytest
-
-from plette.models.sources import NewSource
+from plette.models.sources import Source
 
 def test_source_from_data():
-    s = NewSource(
+    s = Source(
         **{
             "name": "devpi",
             "url": "https://$USER:$PASS@mydevpi.localhost",
@@ -20,7 +15,7 @@ def test_source_from_data():
 
 def test_source_as_data_expanded(monkeypatch):
     monkeypatch.setattr("os.environ", {"USER": "user", "PASS": "pa55"})
-    s = NewSource(
+    s = Source(
         **{
             "name": "devpi",
             "url": "https://$USER:$PASS@mydevpi.localhost",
@@ -32,7 +27,7 @@ def test_source_as_data_expanded(monkeypatch):
 
 def test_source_as_data_expanded_partial(monkeypatch):
     monkeypatch.setattr("os.environ", {"USER": "user"})
-    s = NewSource(
+    s = Source(
         **{
             "name": "devpi",
             "url": "https://$USER:$PASS@mydevpi.localhost",

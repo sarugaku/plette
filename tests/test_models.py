@@ -2,11 +2,6 @@ import hashlib
 
 import pytest
 
-try:
-    import cerberus
-except ImportError:
-    cerberus = None
-
 from plette import models
 
 
@@ -89,7 +84,6 @@ def test_requires_python_full_version_no_version():
     assert str(ctx.value) == "python_version"
 
 
-@pytest.mark.skipif(cerberus is None, reason="Skip validation without Ceberus")
 def test_allows_python_version_and_full():
     r = models.Requires({"python_version": "8.1", "python_full_version": "8.1.9"})
     assert r.python_version == "8.1"
@@ -114,13 +108,11 @@ def test_package_wrong_key():
     assert str(ctx.value) == "version"
 
 
-@pytest.mark.skipif(cerberus is None, reason="Skip validation without Ceberus")
 def test_package_with_wrong_extras():
     with pytest.raises(models.base.ValidationError):
         p = models.Package({"version": "==1.20.0", "extras": "broker"})
 
 
-@pytest.mark.skipif(cerberus is None, reason="Skip validation without Ceberus")
 def test_package_with_extras():
     p = models.Package({"version": "==1.20.0", "extras": ["broker", "tests"]})
     assert p.extras == ['broker', 'tests']
@@ -191,7 +183,7 @@ def test_set_slice(sources):
             "verify_ssl": True,
         },
     ]
-    assert sources._data == [
+    assert sources == [
         {
             "name": "pypi",
             "url": "https://pypi.org/simple",
@@ -221,7 +213,6 @@ def test_del_slice(sources):
     ]
 
 
-@pytest.mark.skipif(cerberus is None, reason="Skip validation without Ceberus")
 def test_validation_error():
     data = {"name": "test", "verify_ssl": 1}
     with pytest.raises(models.base.ValidationError) as exc_info:

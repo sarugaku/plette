@@ -7,7 +7,8 @@ import numbers
 
 import collections.abc as collections_abc
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional
 
 from .models import DataView, Meta, PackageCollection
 
@@ -60,16 +61,9 @@ def _copy_jsonsafe(value):
 @dataclass
 class Lockfile:
     """Representation of a Pipfile.lock."""
-
-    _meta: Meta
-    default: dict
-    develop: dict
-    __SCHEMA__ = {
-        "_meta": {"type": "dict", "required": True},
-        "default": {"type": "dict", "required": True},
-        "develop": {"type": "dict", "required": True},
-    }
-
+    _meta: field(init=False)
+    default: Optional[dict] =  field(default_factory=dict)
+    develop: Optional[dict] = field(default_factory=dict)
 
     def __post_init__(self):
         """Run validation methods if declared.
@@ -83,13 +77,21 @@ class Lockfile:
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name), field=field))
 
+        self.meta = self._meta
+
+    def validate__meta(self, value, field):
+        if 'pipfile-spec' in value:
+            value['pipfile_spec'] = value.pop('pipfile-spec')
+
+        return Meta(**value)
+
     @classmethod
     def load(cls, fh, encoding=None):
         if encoding is None:
             data = json.load(fh)
         else:
             data = json.loads(fh.read().decode(encoding))
-        return cls(data)
+        return cls(**data)
 
     @classmethod
     def with_meta_from(cls, pipfile, categories=None):
@@ -119,7 +121,7 @@ class Lockfile:
         return cls(data)
 
     def __getitem__(self, key):
-        value = self._data[key]
+        value = self[key]
         try:
             if key == "_meta":
                 return Meta(value)
@@ -128,64 +130,23 @@ class Lockfile:
         except KeyError:
             return value
 
-    def __setitem__(self, key, value):
-        if isinstance(value, DataView):
-            self._data[key] = value._data
-        else:
-            self._data[key] = value
-
     def is_up_to_date(self, pipfile):
         return self.meta.hash == pipfile.get_hash()
 
     def dump(self, fh, encoding=None):
         encoder = _LockFileEncoder()
         if encoding is None:
-            for chunk in encoder.iterencode(self._data):
+            for chunk in encoder.iterencode(self):
                 fh.write(chunk)
         else:
-            content = encoder.encode(self._data)
+            content = encoder.encode(self)
             fh.write(content.encode(encoding))
+        self.meta = self._meta
 
     @property
     def meta(self):
-        try:
-            return self["_meta"]
-        except KeyError:
-            raise AttributeError("meta")
+        return self._meta
 
     @meta.setter
     def meta(self, value):
-        self["_meta"] = value
-
-    @property
-    def _meta(self):
-        try:
-            return self["_meta"]
-        except KeyError:
-            raise AttributeError("meta")
-
-    @_meta.setter
-    def _meta(self, value):
-        self["_meta"] = value
-
-    @property
-    def default(self):
-        try:
-            return self["default"]
-        except KeyError:
-            raise AttributeError("default")
-
-    @default.setter
-    def default(self, value):
-        self["default"] = value
-
-    @property
-    def develop(self):
-        try:
-            return self["develop"]
-        except KeyError:
-            raise AttributeError("develop")
-
-    @develop.setter
-    def develop(self, value):
-        self["develop"] = value
+        self._meta = value

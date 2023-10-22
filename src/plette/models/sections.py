@@ -38,7 +38,7 @@ class SourceCollection:
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name), field=field))
 
-    def validate_sources(self, value):
+    def validate_sources(self, value, field):
         for v in value:
             Source(**v)
 
@@ -96,56 +96,15 @@ class Meta:
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name), field=field))
 
-    def validate_requires(self, value):
+    def validate_requires(self, value, field):
         Requires(value)
 
-    def validate_sources(self, value):
+    def validate_sources(self, value, field):
         SourceCollection(value)
 
-    def validate_pipfile_spec(self, value):
+    def validate_pipfile_spec(self, value, field):
         if int(value) != 6:
             raise ValueError('Only pipefile-spec version 6 is supported')
-
-    @property
-    def hash_(self):
-        return self["hash"]
-
-    @hash_.setter
-    def hash_(self, value):
-        self["hash"] = value
-
-    @property
-    def hash(self):
-        return self["hash"]
-
-    @hash.setter
-    def hash(self, value):
-        self["hash"] = value
-
-    @property
-    def pipfile_spec(self):
-        return self["pipfile-spec"]
-
-    @pipfile_spec.setter
-    def pipfile_spec(self, value):
-        self["pipfile-spec"] = value
-
-    @property
-    def requires(self):
-        return self["requires"]
-
-    @requires.setter
-    def requires(self, value):
-        self["requires"] = value
-
-    @property
-    def sources(self):
-        return self["sources"]
-
-    @sources.setter
-    def sources(self, value):
-        self["sources"] = value
-
 
 @dataclass
 class Pipenv:
