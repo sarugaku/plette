@@ -1,27 +1,30 @@
-from dataclasses import dataclass
+# pylint: disable=missing-module-docstring,missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=no-member
 
-from .base import DataView, DataViewMapping, DataViewSequence
+from dataclasses import dataclass
+from typing import Optional, List
+
 from .hashes import Hash
 from .packages import Package
 from .scripts import Script
 from .sources import Source
 
 
-class PackageCollection(DataViewMapping):
-    item_class = Package
+@dataclass
+class PackageCollection:
+    packages: List[Package]
 
 
-class ScriptCollection(DataViewMapping):
-    item_class = Script
+@dataclass
+class ScriptCollection:
+    scripts: List[Script]
 
-
-class SourceCollection(DataViewSequence):
-    item_class = Source
 
 @dataclass
 class SourceCollection:
 
-    sources: list
+    sources: List[Source]
 
     def __post_init__(self):
         """Run validation methods if declared.
@@ -35,35 +38,15 @@ class SourceCollection:
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name), field=field))
 
-    def validate_sources(self, value, **kwargs):
+    def validate_sources(self, value):
         for v in value:
             Source(**v)
 
-class Requires(DataView):
-    """Representation of the `[requires]` section in a Pipfile."""
+@dataclass
+class Requires:
 
-    __SCHEMA__ = {
-        "python_version": {
-            "type": "string",
-        },
-        "python_full_version": {
-            "type": "string",
-        },
-    }
-
-    @property
-    def python_version(self):
-        try:
-            return self._data["python_version"]
-        except KeyError:
-            raise AttributeError("python_version")
-
-    @property
-    def python_full_version(self):
-        try:
-            return self._data["python_full_version"]
-        except KeyError:
-            raise AttributeError("python_full_version")
+    python_version: Optional[str]
+    python_version: Optional[str]
 
 
 META_SECTIONS = {
@@ -72,24 +55,34 @@ META_SECTIONS = {
     "sources": SourceCollection,
 }
 
-class PipfileSection(DataView):
+
+@dataclass
+class PipfileSection:
 
     """
     Dummy pipfile validator that needs to be completed in a future PR
     Hint: many pipfile features are undocumented in  pipenv/project.py
     """
+    def __post_init__(self):
+        """Run validation methods if declared.
+        The validation method can be a simple check
+        that raises ValueError or a transformation to
+        the field value.
+        The validation is performed by calling a function named:
+            `validate_<field_name>(self, value, field) -> field.type`
+        """
+        for name, field in self.__dataclass_fields__.items():
+            if (method := getattr(self, f"validate_{name}", None)):
+                setattr(self, name, method(getattr(self, name), field=field))
 
-    @classmethod
-    def validate(cls, data):
-        pass
 
 @dataclass
-class NewMeta:
+class Meta:
 
-    hash: dict
-    pipfile_spec: int
-    requires: dict
-    sources: list
+    hash: Hash
+    pipfile_spec: str
+    requires: Requires
+    sources: SourceCollection
 
     def __post_init__(self):
         """Run validation methods if declared.
@@ -103,44 +96,15 @@ class NewMeta:
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name), field=field))
 
-    def validate_hash(self, value, **kwargs):
-        Hash(value)
-
-    def validate_requires(self, value, **kwargs):
+    def validate_requires(self, value):
         Requires(value)
 
-    def validate_sources(self, value, **kwargs):
+    def validate_sources(self, value):
         SourceCollection(value)
 
-
-class Meta(DataView):
-    """Representation of the `_meta` section in a Pipfile.lock."""
-
-    __SCHEMA__ = {
-        "hash": {"type": "dict", "required": True},
-        "pipfile-spec": {"type": "integer", "required": True, "min": 0},
-        "requires": {"type": "dict", "required": True},
-        "sources": {"type": "list", "required": True},
-    }
-
-    @classmethod
-    def validate(cls, data):
-        super(Meta, cls).validate(data)
-        for key, klass in META_SECTIONS.items():
-            klass.validate(data[key])
-
-    def __getitem__(self, key):
-        value = super(Meta, self).__getitem__(key)
-        try:
-            return META_SECTIONS[key](value)
-        except KeyError:
-            return value
-
-    def __setitem__(self, key, value):
-        if isinstance(value, DataView):
-            self._data[key] = value._data
-        else:
-            self._data[key] = value
+    def validate_pipfile_spec(self, value):
+        if int(value) != 6:
+            raise ValueError('Only pipefile-spec version 6 is supported')
 
     @property
     def hash_(self):
@@ -183,9 +147,8 @@ class Meta(DataView):
         self["sources"] = value
 
 
-class Pipenv(DataView):
+@dataclass
+class Pipenv:
     """Represent the [pipenv] section in Pipfile"""
 
-    __SCHEMA__ = {
-        "allow_prereleases": {"type": "boolean", "required": False},
-    }
+    allow_prereleases: Optional[bool]
