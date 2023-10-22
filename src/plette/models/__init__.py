@@ -17,7 +17,6 @@ from .sources import Source
 
 from .sections import (
     Meta,
-    NewMeta,
     Requires,
     PackageCollection,
     Pipenv,

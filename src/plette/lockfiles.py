@@ -1,9 +1,15 @@
+# pylint: disable=missing-module-docstring,missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=no-member
+
 import json
 import numbers
 
 import collections.abc as collections_abc
 
-from .models import DataView, NewMeta as Meta, PackageCollection
+from dataclasses import dataclass
+
+from .models import DataView, Meta, PackageCollection
 
 
 class _LockFileEncoder(json.JSONEncoder):
@@ -15,19 +21,19 @@ class _LockFileEncoder(json.JSONEncoder):
     * The output is always UTF-8-encoded text, never binary, even on Python 2.
     """
     def __init__(self):
-        super(_LockFileEncoder, self).__init__(
+        super().__init__(
             indent=4, separators=(",", ": "), sort_keys=True,
         )
 
-    def encode(self, obj):
-        content = super(_LockFileEncoder, self).encode(obj)
+    def encode(self, o):
+        content = super().encode(o)
         if not isinstance(content, str):
             content = content.decode("utf-8")
         content += "\n"
         return content
 
-    def iterencode(self, obj):
-        for chunk in super(_LockFileEncoder, self).iterencode(obj):
+    def iterencode(self, o, _one_shot=False):
+        for chunk in super().iterencode(o):
             if not isinstance(chunk, str):
                 chunk = chunk.decode("utf-8")
             yield chunk
@@ -51,30 +57,38 @@ def _copy_jsonsafe(value):
     return str(value)
 
 
-class Lockfile(DataView):
-    """Representation of a Pipfile.lock.
-    """
+@dataclass
+class Lockfile:
+    """Representation of a Pipfile.lock."""
+
+    _meta: Meta
+    default: dict
+    develop: dict
     __SCHEMA__ = {
         "_meta": {"type": "dict", "required": True},
         "default": {"type": "dict", "required": True},
         "develop": {"type": "dict", "required": True},
     }
 
-    @classmethod
-    def validate(cls, data):
-        super(Lockfile, cls).validate(data)
-        for key, value in data.items():
-            if key == "_meta":
-                Meta(**{k.replace('-', '_'):v for k,v in value.items()})
-            else:
-                PackageCollection(value)
+
+    def __post_init__(self):
+        """Run validation methods if declared.
+        The validation method can be a simple check
+        that raises ValueError or a transformation to
+        the field value.
+        The validation is performed by calling a function named:
+            `validate_<field_name>(self, value, field) -> field.type`
+        """
+        for name, field in self.__dataclass_fields__.items():
+            if (method := getattr(self, f"validate_{name}", None)):
+                setattr(self, name, method(getattr(self, name), field=field))
 
     @classmethod
-    def load(cls, f, encoding=None):
+    def load(cls, fh, encoding=None):
         if encoding is None:
-            data = json.load(f)
+            data = json.load(fh)
         else:
-            data = json.loads(f.read().decode(encoding))
+            data = json.loads(fh.read().decode(encoding))
         return cls(data)
 
     @classmethod
@@ -123,14 +137,14 @@ class Lockfile(DataView):
     def is_up_to_date(self, pipfile):
         return self.meta.hash == pipfile.get_hash()
 
-    def dump(self, f, encoding=None):
+    def dump(self, fh, encoding=None):
         encoder = _LockFileEncoder()
         if encoding is None:
             for chunk in encoder.iterencode(self._data):
-                f.write(chunk)
+                fh.write(chunk)
         else:
             content = encoder.encode(self._data)
-            f.write(content.encode(encoding))
+            fh.write(content.encode(encoding))
 
     @property
     def meta(self):
