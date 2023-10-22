@@ -1,13 +1,14 @@
+# pylint: disable=missing-module-docstring,missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=no-member
 from dataclasses import dataclass
 from typing import Optional, List
-
-from .base import DataView
 
 
 @dataclass
 class PackageSpecfiers:
     extras: List[str]
-    
+
 
 @dataclass
 class Package:
@@ -30,7 +31,6 @@ class Package:
     extras: Optional[PackageSpecfiers] = None
     path: Optional[str] = None
 
-    def validate_extras(self, value, **kwargs):
+    def validate_extras(self, value):
         if not (isinstance(value, list) and all(isinstance(i, str) for i in value)):
             raise ValueError("Extras must be a list")
-
