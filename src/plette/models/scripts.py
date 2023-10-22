@@ -1,3 +1,6 @@
+# pylint: disable=missing-module-docstring,missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=no-member
 import re
 import shlex
 
@@ -5,7 +8,6 @@ import shlex
 from dataclasses import dataclass
 from typing import List, Union
 
-from .base import DataView
 
 @dataclass(init=False)
 class Script:
@@ -24,7 +26,7 @@ class Script:
         self._parts = [script[0]]
         self._parts.extend(script[1:])
 
-    def validate_script(self, value, **kwargs):
+    def validate_script(self, value):
         if not (isinstance(value, str) or \
                 (isinstance(value, list) and all(isinstance(i, str) for i in value))
                 ):
