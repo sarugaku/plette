@@ -31,6 +31,9 @@ class Package:
     extras: Optional[PackageSpecfiers] = None
     path: Optional[str] = None
 
-    def validate_extras(self, value):
+    def validate_extras(self, value, field):
+        if value is None:
+            return value
         if not (isinstance(value, list) and all(isinstance(i, str) for i in value)):
-            raise ValueError("Extras must be a list")
+            raise ValueError("Extras must be a list or None")
+        return value
