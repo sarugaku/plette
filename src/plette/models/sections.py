@@ -41,6 +41,7 @@ class SourceCollection:
     def validate_sources(self, value, field):
         for v in value:
             Source(**v)
+        return value
 
 @dataclass
 class Requires:
