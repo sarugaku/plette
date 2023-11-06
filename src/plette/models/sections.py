@@ -98,14 +98,16 @@ class Meta:
                 setattr(self, name, method(getattr(self, name), field=field))
 
     def validate_requires(self, value, field):
-        Requires(value)
+        return Requires(value)
 
     def validate_sources(self, value, field):
-        SourceCollection(value)
+        return SourceCollection(value)
 
     def validate_pipfile_spec(self, value, field):
         if int(value) != 6:
             raise ValueError('Only pipefile-spec version 6 is supported')
+        return value
+
 
 @dataclass
 class Pipenv:

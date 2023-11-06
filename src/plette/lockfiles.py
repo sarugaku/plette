@@ -10,7 +10,7 @@ import collections.abc as collections_abc
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .models import DataView, Meta, PackageCollection
+from .models import Meta, PackageCollection
 
 
 class _LockFileEncoder(json.JSONEncoder):
@@ -80,6 +80,9 @@ class Lockfile:
         self.meta = self._meta
 
     def validate__meta(self, value, field):
+        return self.validate_meta(value, field)
+
+    def validate_meta(self, value, field):
         if 'pipfile-spec' in value:
             value['pipfile_spec'] = value.pop('pipfile-spec')
 
