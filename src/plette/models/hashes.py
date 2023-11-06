@@ -21,13 +21,13 @@ class Hash:
     name: str
     value: str
 
-    def validate_name(self, value):
+    def validate_name(self, value, field):
         if not isinstance(value, str):
             raise ValueError("Hash.name must be a string")
 
         return value
 
-    def validate_value(self, value):
+    def validate_value(self, value, field):
         if not isinstance(value, str):
             raise ValueError("Hash.value must be a string")
 
