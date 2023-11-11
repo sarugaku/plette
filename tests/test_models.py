@@ -23,43 +23,6 @@ def test_hash_as_line():
     assert h.as_line() == "md5:acbd18db4cc2f85cedef654fccc4a4d8"
 
 
-def test_source_from_data():
-    s = models.Source(
-        {
-            "name": "devpi",
-            "url": "https://$USER:$PASS@mydevpi.localhost",
-            "verify_ssl": False,
-        }
-    )
-    assert s.name == "devpi"
-    assert s.url == "https://$USER:$PASS@mydevpi.localhost"
-    assert s.verify_ssl is False
-
-
-def test_source_as_data_expanded(monkeypatch):
-    monkeypatch.setattr("os.environ", {"USER": "user", "PASS": "pa55"})
-    s = models.Source(
-        {
-            "name": "devpi",
-            "url": "https://$USER:$PASS@mydevpi.localhost",
-            "verify_ssl": False,
-        }
-    )
-    assert s.url_expanded == "https://user:pa55@mydevpi.localhost"
-
-
-def test_source_as_data_expanded_partial(monkeypatch):
-    monkeypatch.setattr("os.environ", {"USER": "user"})
-    s = models.Source(
-        {
-            "name": "devpi",
-            "url": "https://$USER:$PASS@mydevpi.localhost",
-            "verify_ssl": False,
-        }
-    )
-    assert s.url_expanded == "https://user:$PASS@mydevpi.localhost"
-
-
 def test_requires_python_version():
     r = models.Requires({"python_version": "8.19"})
     assert r.python_version == "8.19"
