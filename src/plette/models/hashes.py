@@ -44,8 +44,8 @@ class Hash:
         """parse a dependecy line and create a Hash object"""
         try:
             name, value = value.split(":", 1)
-        except ValueError:
-            name = "sha256"
+        except AttributeError:
+            name, value = list(value.items())[0]
         return cls(name, value)
 
     def __eq__(self, other):

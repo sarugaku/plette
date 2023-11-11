@@ -85,6 +85,10 @@ class Meta:
     requires: Requires
     sources: SourceCollection
 
+    @classmethod
+    def from_dict(cls, d: dict) -> "Meta":
+        return cls(**{k.replace('-', '_'): v for k, v in d.items()})
+
     def __post_init__(self):
         """Run validation methods if declared.
         The validation method can be a simple check
@@ -96,6 +100,12 @@ class Meta:
         for name, field in self.__dataclass_fields__.items():
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name), field=field))
+
+    def validate_hash(self, value, field):
+        try:
+            return Hash(**value)
+        except TypeError:
+            return Hash.from_line(value)
 
     def validate_requires(self, value, field):
         return Requires(value)
