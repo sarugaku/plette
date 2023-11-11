@@ -10,7 +10,7 @@ import collections.abc as collections_abc
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .models import Meta, PackageCollection
+from .models import Meta, PackageCollection, Package
 
 
 class _LockFileEncoder(json.JSONEncoder):
@@ -73,6 +73,7 @@ class Lockfile:
         The validation is performed by calling a function named:
             `validate_<field_name>(self, value, field) -> field.type`
         """
+
         for name, field in self.__dataclass_fields__.items():
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name), field=field))
@@ -87,6 +88,17 @@ class Lockfile:
             value['pipfile_spec'] = value.pop('pipfile-spec')
 
         return Meta(**value)
+
+    def validate_default(self, value, field):
+        packages = {}
+        for name, spec in value.items():
+            if isinstance(spec, str):
+                packages[name] = Package(spec)
+            else:
+                packages[name] = Package(**spec)
+
+        return packages
+
 
     @classmethod
     def load(cls, fh, encoding=None):
