@@ -191,7 +191,8 @@ good-names=i,
 	   v,
            ex,
            Run,
-           _
+           _,
+	   fi
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
