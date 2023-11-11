@@ -53,34 +53,6 @@ def test_allows_python_version_and_full():
     assert r.python_full_version == "8.1.9"
 
 
-def test_package_str():
-    p = models.Package("*")
-    p.version == "*"
-
-
-def test_package_dict():
-    p = models.Package({"version": "*"})
-    p.version == "*"
-
-
-def test_package_wrong_key():
-    p = models.Package({"path": ".", "editable": True})
-    assert p.editable is True
-    with pytest.raises(AttributeError) as ctx:
-        p.version
-    assert str(ctx.value) == "version"
-
-
-def test_package_with_wrong_extras():
-    with pytest.raises(models.base.ValidationError):
-        p = models.Package({"version": "==1.20.0", "extras": "broker"})
-
-
-def test_package_with_extras():
-    p = models.Package({"version": "==1.20.0", "extras": ["broker", "tests"]})
-    assert p.extras == ['broker', 'tests']
-
-
 HASH = "9aaf3dbaf8c4df3accd4606eb2275d3b91c9db41be4fd5a97ecc95d79a12cfe6"
 
 

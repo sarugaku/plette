@@ -31,3 +31,9 @@ def test_package_with_wrong_extras():
 def test_package_with_extras():
     p = Package(**{"version": "==1.20.0", "extras": ["broker", "tests"]})
     assert p.extras == ['broker', 'tests']
+
+
+def test_package_wrong_key():
+    p = Package(**{"path": ".", "editable": True})
+    assert p.editable is True
+    assert p.version is None
