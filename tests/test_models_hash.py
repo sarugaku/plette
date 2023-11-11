@@ -16,5 +16,5 @@ def test_hash_from_line():
 
 
 def test_hash_as_line():
-    h = Hash(name="md5", value="acbd18db4cc2f85cedef654fccc4a4d8")
+    h = Hash.from_dict({"md5": "acbd18db4cc2f85cedef654fccc4a4d8"})
     assert h.as_line() == "md5:acbd18db4cc2f85cedef654fccc4a4d8"

@@ -5,24 +5,6 @@ import pytest
 from plette import models
 
 
-def test_hash_from_hash():
-    v = hashlib.md5(b"foo")
-    h = models.Hash.from_hash(v)
-    assert h.name == "md5"
-    assert h.value == "acbd18db4cc2f85cedef654fccc4a4d8"
-
-
-def test_hash_from_line():
-    h = models.Hash.from_line("md5:acbd18db4cc2f85cedef654fccc4a4d8")
-    assert h.name == "md5"
-    assert h.value == "acbd18db4cc2f85cedef654fccc4a4d8"
-
-
-def test_hash_as_line():
-    h = models.Hash({"md5": "acbd18db4cc2f85cedef654fccc4a4d8"})
-    assert h.as_line() == "md5:acbd18db4cc2f85cedef654fccc4a4d8"
-
-
 def test_requires_python_version():
     r = models.Requires({"python_version": "8.19"})
     assert r.python_version == "8.19"

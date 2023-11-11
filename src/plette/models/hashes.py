@@ -40,6 +40,15 @@ class Hash:
         return cls(name=ins.name, value=ins.hexdigest())
 
     @classmethod
+    def from_dict(cls, value):
+        """parse a depedency line and create an Hash object"""
+        try:
+            name, value = list(value.items())[0]
+        except AttributeError:
+            name, value = value.split(":", 1)
+        return cls(name, value)
+
+    @classmethod
     def from_line(cls, value):
         """parse a dependecy line and create a Hash object"""
         try:
