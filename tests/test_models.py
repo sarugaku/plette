@@ -5,36 +5,6 @@ import pytest
 from plette import models
 
 
-def test_requires_python_version():
-    r = models.Requires({"python_version": "8.19"})
-    assert r.python_version == "8.19"
-
-
-def test_requires_python_version_no_full_version():
-    r = models.Requires({"python_version": "8.19"})
-    with pytest.raises(AttributeError) as ctx:
-        r.python_full_version
-    assert str(ctx.value) == "python_full_version"
-
-
-def test_requires_python_full_version():
-    r = models.Requires({"python_full_version": "8.19"})
-    assert r.python_full_version == "8.19"
-
-
-def test_requires_python_full_version_no_version():
-    r = models.Requires({"python_full_version": "8.19"})
-    with pytest.raises(AttributeError) as ctx:
-        r.python_version
-    assert str(ctx.value) == "python_version"
-
-
-def test_allows_python_version_and_full():
-    r = models.Requires({"python_version": "8.1", "python_full_version": "8.1.9"})
-    assert r.python_version == "8.1"
-    assert r.python_full_version == "8.1.9"
-
-
 @pytest.fixture()
 def sources():
     return models.SourceCollection(

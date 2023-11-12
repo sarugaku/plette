@@ -45,9 +45,9 @@ class SourceCollection:
 
 @dataclass
 class Requires:
+    python_version: Optional[str] = None
+    python_full_version: Optional[str] = None
 
-    python_version: Optional[str]
-    python_version: Optional[str]
 
 
 META_SECTIONS = {
