@@ -39,9 +39,30 @@ class SourceCollection:
                 setattr(self, name, method(getattr(self, name), field=field))
 
     def validate_sources(self, value, field):
+        sources = []
         for v in value:
-            Source(**v)
-        return value
+            if isinstance(v, dict):
+                sources.append(Source(**v))
+            elif isinstance(v, Source):
+                sources.append(v)
+        return sources
+
+    def __iter__(self):
+        return (d for d in self.sources)
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return SourceCollection(self.sources[key])
+        if isinstance(key, int):
+            src = self.sources[key]
+            if isinstance(src, dict):
+                return Source(**key)
+            if isinstance(src, Source):
+                return src
+        raise TypeError(f"Unextepcted type {type(src)}")
+
+    def __len__(self):
+        return len(self.sources)
 
 @dataclass
 class Requires:
