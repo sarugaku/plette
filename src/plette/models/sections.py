@@ -64,6 +64,20 @@ class SourceCollection:
     def __len__(self):
         return len(self.sources)
 
+    def __setitem__(self, key, value):
+        if isinstance(key, slice):
+            self.sources[key] = value
+        elif isinstance(value, Source):
+            self.sources.append(value)
+        elif isinstance(value, list):
+            self.sources.extend(value)
+        else:
+            raise TypeError(f"Unextepcted type {type(value)} for {value}")
+
+    def __delitem__(self, key):
+        del self.sources[key]
+
+
 @dataclass
 class Requires:
     python_version: Optional[str] = None
