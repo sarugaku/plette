@@ -13,33 +13,13 @@ from typing import Optional
 from .models import Meta, PackageCollection, Package
 
 
-class _LockFileEncoder(json.JSONEncoder):
-    """A specilized JSON encoder to convert loaded data into a lock file.
+import dataclasses, json
 
-    This adds a few characteristics to the encoder:
-
-    * The JSON is always prettified with indents and spaces.
-    * The output is always UTF-8-encoded text, never binary, even on Python 2.
-    """
-    def __init__(self):
-        super().__init__(
-            indent=4, separators=(",", ": "), sort_keys=True,
-        )
-
-    def encode(self, o):
-        content = super().encode(o)
-        if not isinstance(content, str):
-            content = content.decode("utf-8")
-        content += "\n"
-        return content
-
-    def iterencode(self, o, _one_shot=False):
-        for chunk in super().iterencode(o):
-            if not isinstance(chunk, str):
-                chunk = chunk.decode("utf-8")
-            yield chunk
-        yield "\n"
-
+class DCJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if dataclasses.is_dataclass(o):
+            return dataclasses.asdict(o)
+        return super().default(o)
 
 PIPFILE_SPEC_CURRENT = 6
 
@@ -84,9 +64,10 @@ class Lockfile:
         return self.validate_meta(value, field)
 
     def validate_meta(self, value, field):
+        if "_meta" in value:
+            value = value["_meta"]
         if 'pipfile-spec' in value:
             value['pipfile_spec'] = value.pop('pipfile-spec')
-
         return Meta(**value)
 
     def validate_default(self, value, field):
@@ -98,7 +79,6 @@ class Lockfile:
                 packages[name] = Package(**spec)
 
         return packages
-
 
     @classmethod
     def load(cls, fh, encoding=None):
@@ -112,23 +92,23 @@ class Lockfile:
     def with_meta_from(cls, pipfile, categories=None):
         data = {
             "_meta": {
-                "hash": _copy_jsonsafe(pipfile.get_hash()._data),
+                "hash": _copy_jsonsafe(pipfile.get_hash()),
                 "pipfile-spec": PIPFILE_SPEC_CURRENT,
-                "requires": _copy_jsonsafe(pipfile._data.get("requires", {})),
-                "sources": _copy_jsonsafe(pipfile.sources._data),
+                "requires": _copy_jsonsafe(getattr(pipfile, "requires", {})),
+                "sources": _copy_jsonsafe(pipfile.sources),
             },
         }
         if categories is None:
-            data["default"] = _copy_jsonsafe(pipfile._data.get("packages", {}))
-            data["develop"] = _copy_jsonsafe(pipfile._data.get("dev-packages", {}))
+            data["default"] = _copy_jsonsafe(getattr(pipfile, "packages", {}))
+            data["develop"] = _copy_jsonsafe(getattr(pipfile, "dev-packages", {}))
         else:
             for category in categories:
                 if category == "default" or category == "packages":
-                    data["default"] = _copy_jsonsafe(pipfile._data.get("packages", {}))
+                    data["default"] = _copy_jsonsafe(getattr(pipfile,"packages", {}))
                 elif category == "develop" or category == "dev-packages":
-                    data["develop"] = _copy_jsonsafe(pipfile._data.get("dev-packages", {}))
+                    data["develop"] = _copy_jsonsafe(getattr(pipfile,"dev-packages", {}))
                 else:
-                    data[category] = _copy_jsonsafe(pipfile._data.get(category, {}))
+                    data[category] = _copy_jsonsafe(getattr(pipfile, category, {}))
         if "default" not in data:
             data["default"]  = {}
         if "develop" not in data:
@@ -149,13 +129,7 @@ class Lockfile:
         return self.meta.hash == pipfile.get_hash()
 
     def dump(self, fh, encoding=None):
-        encoder = _LockFileEncoder()
-        if encoding is None:
-            for chunk in encoder.iterencode(self):
-                fh.write(chunk)
-        else:
-            content = encoder.encode(self)
-            fh.write(content.encode(encoding))
+        json.dump(self, fh, cls=DCJSONEncoder)
         self.meta = self._meta
 
     @property

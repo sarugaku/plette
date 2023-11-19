@@ -3,8 +3,11 @@ import json
 
 import tomlkit
 
+from dataclasses import dataclass, field
+
+from typing import Optional
 from .models import (
-    DataView, Hash, Requires, PipfileSection, Pipenv,
+    Hash, Requires, PipfileSection, Pipenv,
     PackageCollection, ScriptCollection, SourceCollection,
 )
 
@@ -26,27 +29,39 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 """
 
-class Pipfile(DataView):
-    """Representation of a Pipfile.
-    """
-    __SCHEMA__ = {}
+@dataclass
+class Pipfile:
+    """Representation of a Pipfile."""
+    sources: SourceCollection
+    packages: Optional[PackageCollection] = None
 
-    @classmethod
-    def validate(cls, data):
-        # HACK: DO NOT CALL `super().validate()` here!!
-        # Cerberus seems to break TOML Kit's inline table preservation if it
-        # is not at the top-level. Fortunately the spec doesn't have nested
-        # non-inlined tables, so we're OK as long as validation is only
-        # performed at section-level. validation is performed.
-        for key, klass in PIPFILE_SECTIONS.items():
-            if key not in data:
+    def get_hash(self):
+        data = {
+            "_meta": {
+                "sources": getattr(self, "source", {}),
+                "requires": getattr(self, "requires", {}),
+            },
+            "default": getattr(self, "packages", {}),
+            "develop": getattr(self, "dev-packages", {}),
+        }
+        for category, values in self.__dict__.items():
+            if category in PIPFILE_SECTIONS or category in ("default", "develop", "pipenv"):
                 continue
-            klass.validate(data[key])
+            data[category] = values
+        content = json.dumps(data, sort_keys=True, separators=(",", ":"))
+        if isinstance(content, str):
+            content = content.encode("utf-8")
+        return Hash.from_hash(hashlib.sha256(content))
 
-        package_categories = set(data.keys()) - set(PIPFILE_SECTIONS.keys())        
 
-        for category in package_categories:
-            PackageCollection.validate(data[category])
+class Foo:
+    source: SourceCollection
+    packages: Optional[PackageCollection] = None
+    dev_packages: PackageCollection
+    requires: Requires
+    scripts: ScriptCollection
+    pipfile: PipfileSection
+    pipenv: Pipenv
 
     @classmethod
     def load(cls, f, encoding=None):
@@ -65,28 +80,22 @@ class Pipfile(DataView):
         return cls(data)
 
     def __getitem__(self, key):
-        value = self._data[key]
+        value = self[key]
         try:
             return PIPFILE_SECTIONS[key](value)
         except KeyError:
             return value
 
-    def __setitem__(self, key, value):
-        if isinstance(value, DataView):
-            self._data[key] = value._data
-        else:
-            self._data[key] = value
-
     def get_hash(self):
         data = {
             "_meta": {
-                "sources": self._data["source"],
-                "requires": self._data.get("requires", {}),
+                "sources": self["source"],
+                "requires": getattr(self, "requires", {}),
             },
-            "default": self._data.get("packages", {}),
-            "develop": self._data.get("dev-packages", {}),
+            "default": getattr(self, "packages", {}),
+            "develop": getattr(self, "dev-packages", {}),
         }
-        for category, values in self._data.items():
+        for category, values in self.__dict__.items():
             if category in PIPFILE_SECTIONS or category in ("default", "develop", "pipenv"):
                 continue
             data[category] = values
