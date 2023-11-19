@@ -67,7 +67,6 @@ PIPFILE_SPEC_CURRENT = 6
 def _copy_jsonsafe(value):
     """Deep-copy a value into JSON-safe types.
     """
-    import pdb; pdb.set_trace()
     if isinstance(value, (str, numbers.Number)):
         return value
     if isinstance(value, collections_abc.Mapping):
