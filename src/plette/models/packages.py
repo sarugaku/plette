@@ -2,7 +2,7 @@
 # pylint: disable=missing-function-docstring
 # pylint: disable=no-member
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Union
 
 
 @dataclass
@@ -25,7 +25,7 @@ class Package:
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name), field=field))
 
-    version: Optional[str] = None
+    version: Union[Optional[str],Optional[dict]] = None
     specifiers: Optional[PackageSpecfiers] = None
     editable: Optional[bool] = None
     extras: Optional[PackageSpecfiers] = None
@@ -37,3 +37,13 @@ class Package:
         if not (isinstance(value, list) and all(isinstance(i, str) for i in value)):
             raise ValueError("Extras must be a list or None")
         return value
+
+    def validate_version(self, value, field):
+        if isinstance(value, dict):
+            return value
+        if isinstance(value, str):
+            return value
+        if value is None:
+            return None
+
+        raise ValueError(f"Unknown type {type(value)} for version")

@@ -1,6 +1,7 @@
 # pylint: disable=missing-module-docstring,missing-class-docstring
 # pylint: disable=missing-function-docstring
 # pylint: disable=no-member
+import json
 import textwrap
 
 from plette import Lockfile, Pipfile
@@ -111,8 +112,9 @@ def test_lockfile_dump_format(tmpdir):
     outpath = tmpdir.join("out.json")
     with outpath.open("w") as f:
         lock.dump(f)
-
-    assert outpath.read() == content
+    loaded = json.loads(outpath.read())
+    assert "_meta" in loaded
+    assert json.loads(outpath.read()) == json.loads(content)
 
 
 def test_lockfile_from_pipfile_meta():

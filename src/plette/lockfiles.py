@@ -2,6 +2,7 @@
 # pylint: disable=missing-function-docstring
 # pylint: disable=no-member
 
+import dataclasses
 import json
 import numbers
 
@@ -12,13 +13,52 @@ from typing import Optional
 
 from .models import Meta, PackageCollection, Package
 
+def flatten_versions(d):
+ copy = {}
+ # Iterate over a copy of the dictionary
+ for key, value in d.items():
+     # If the value is a dictionary, call the function recursively
+     #if isinstance(value, dict):
+     #    flatten_dict(value)
+     # If the key is "version", replace the key with the value
+     copy[key] = value["version"]
+ return copy
 
-import dataclasses, json
+def remove_empty_values(d):
+    #  Iterate over a copy of the dictionary
+    for key, value in list(d.items()):
+        # If the value is a dictionary, call the function recursively
+        if isinstance(value, dict):
+            remove_empty_values(value)
+            # If the dictionary is empty, remove the key
+            if not value:
+                del d[key]
+        # If the value is None or an empty string, remove the key
+        elif value is None or value == '':
+            del d[key]
 
 class DCJSONEncoder(json.JSONEncoder):
     def default(self, o):
         if dataclasses.is_dataclass(o):
-            return dataclasses.asdict(o)
+            o = dataclasses.asdict(o)
+            if "_meta" in o:
+                o["_meta"]["pipfile-spec"] = o["_meta"].pop("pipfile_spec")
+                o["_meta"]["hash"] = {o["_meta"]["hash"]["name"]: o["_meta"]["hash"]["value"]}
+                o["_meta"]["sources"] = o["_meta"]["sources"].pop("sources")
+
+            remove_empty_values(o)
+
+            for section in ["default", "develop"]:
+                try:
+                    o[section] = flatten_versions(o[section])
+                except KeyError:
+                    continue
+            # add silly default values
+            if "develop" not in o:
+                o["develop"] = {}
+            if "requires" not in o["_meta"]:
+                o["_meta"]["requires"] = {}
+            return o
         return super().default(o)
 
 PIPFILE_SPEC_CURRENT = 6
@@ -27,6 +67,7 @@ PIPFILE_SPEC_CURRENT = 6
 def _copy_jsonsafe(value):
     """Deep-copy a value into JSON-safe types.
     """
+    import pdb; pdb.set_trace()
     if isinstance(value, (str, numbers.Number)):
         return value
     if isinstance(value, collections_abc.Mapping):
@@ -73,11 +114,7 @@ class Lockfile:
     def validate_default(self, value, field):
         packages = {}
         for name, spec in value.items():
-            if isinstance(spec, str):
-                packages[name] = Package(spec)
-            else:
-                packages[name] = Package(**spec)
-
+            packages[name] = Package(spec)
         return packages
 
     @classmethod

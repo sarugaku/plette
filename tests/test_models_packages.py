@@ -4,12 +4,12 @@ from plette.models import Package
 
 def test_package_str():
     p = Package("*")
-    p.version == "*"
+    assert p.version == "*"
 
 
 def test_package_dict():
-    p = Package(**{"version": "*"})
-    p.version == "*"
+    p = Package({"version": "*"})
+    assert p.version == {"version": "*"}
 
 
 def test_package_version_is_none():
