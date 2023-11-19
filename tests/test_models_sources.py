@@ -35,3 +35,24 @@ def test_source_as_data_expanded_partial(monkeypatch):
         }
     )
     assert s.url_expanded == "https://user:$PASS@mydevpi.localhost"
+
+
+def test_validation_error():
+    data = {"name": "test", "verify_ssl": 1}
+
+    with pytest.raises(TypeError) as exc_info:
+        Source(**data)
+
+    error_message = str(exc_info.value)
+
+    assert "missing 1 required positional argument: 'url'" in error_message
+
+    data["url"]  = "http://localhost:8000"
+
+    with pytest.raises(models.base.ValidationError) as exc_info:
+        Source(**data)
+
+    error_message = str(exc_info.value)
+
+
+    assert "verify_ssl: must be of boolean type" in error_message
