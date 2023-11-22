@@ -59,6 +59,26 @@ class Pipfile:
             content = content.encode("utf-8")
         return Hash.from_hash(hashlib.sha256(content))
 
+    @classmethod
+    def load(cls, f, encoding=None):
+        content = f.read()
+        if encoding is not None:
+            content = content.decode(encoding)
+        data = tomlkit.loads(content)
+        if "source" not in data:
+            # HACK: There is no good way to prepend a section to an existing
+            # TOML document, but there's no good way to copy non-structural
+            # content from one TOML document to another either. Modify the
+            # TOML content directly, and load the new in-memory document.
+            sep = "" if content.startswith("\n") else "\n"
+            content = DEFAULT_SOURCE_TOML + sep + content
+        data = tomlkit.loads(content)
+        return cls(data)
+
+    @property
+    def source(self):
+        return self.sources[0]
+
 
 class Foo:
     source: SourceCollection

@@ -25,7 +25,7 @@ class Package:
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name), field=field))
 
-    version: Union[Optional[str],Optional[dict]] = None
+    version: Union[Optional[str],Optional[dict]] = "*"
     specifiers: Optional[PackageSpecfiers] = None
     editable: Optional[bool] = None
     extras: Optional[PackageSpecfiers] = None
@@ -44,6 +44,6 @@ class Package:
         if isinstance(value, str):
             return value
         if value is None:
-            return None
+            return "*"
 
         raise ValueError(f"Unknown type {type(value)} for version")
