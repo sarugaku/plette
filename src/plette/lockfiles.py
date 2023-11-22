@@ -128,7 +128,7 @@ class Lockfile:
     def with_meta_from(cls, pipfile, categories=None):
         data = {
             "_meta": {
-                "hash": _copy_jsonsafe(pipfile.get_hash()),
+                "hash": pipfile.get_hash().__dict__,
                 "pipfile-spec": PIPFILE_SPEC_CURRENT,
                 "requires": _copy_jsonsafe(getattr(pipfile, "requires", {})),
                 "sources": _copy_jsonsafe(pipfile.sources),

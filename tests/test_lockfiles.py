@@ -5,7 +5,7 @@ import json
 import textwrap
 
 from plette import Lockfile, Pipfile
-from plette.models import Package, SourceCollection
+from plette.models import Package, SourceCollection, Hash, Requires
 
 
 HASH = "9aaf3dbaf8c4df3accd4606eb2275d3b91c9db41be4fd5a97ecc95d79a12cfe6"
@@ -118,8 +118,8 @@ def test_lockfile_dump_format(tmpdir):
 
 
 def test_lockfile_from_pipfile_meta():
-    pipfile = Pipfile({
-        "source": [
+    pipfile = Pipfile(**{
+        "sources": [
             {
                 "name": "pypi",
                 "url": "https://pypi.org/simple",
@@ -130,22 +130,23 @@ def test_lockfile_from_pipfile_meta():
             "python_version": "3.7",
         }
     })
+
     pipfile_hash_value = pipfile.get_hash().value
     lockfile = Lockfile.with_meta_from(pipfile)
 
-    pipfile.requires._data["python_version"] = "3.8"
+    pipfile.requires["python_version"] = "3.8"
     pipfile.sources.append({
         "name": "devpi",
         "url": "http://localhost/simple",
         "verify_ssl": True,
     })
 
-    assert lockfile.meta.hash._data == {"sha256": pipfile_hash_value}
-    assert lockfile.meta.requires._data == {"python_version": "3.7"}
-    assert lockfile.meta.sources._data == [
+    assert lockfile.meta.hash == Hash.from_dict({"sha256": pipfile_hash_value})
+    assert lockfile.meta.requires == Requires(python_version={'python_version': '3.7'}, python_full_version=None)
+    assert lockfile.meta.sources == SourceCollection([
         {
             "name": "pypi",
             "url": "https://pypi.org/simple",
             "verify_ssl": True,
         },
-    ]
+    ])

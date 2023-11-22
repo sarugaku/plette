@@ -34,6 +34,12 @@ class Pipfile:
     """Representation of a Pipfile."""
     sources: SourceCollection
     packages: Optional[PackageCollection] = None
+    packages: Optional[PackageCollection] = None
+    dev_packages: Optional[PackageCollection] = None
+    requires: Optional[Requires] = None
+    scripts: Optional[ScriptCollection] = None
+    pipfile: Optional[PipfileSection] = None
+    pipenv: Optional[Pipenv] = None
 
     def get_hash(self):
         data = {
@@ -57,11 +63,11 @@ class Pipfile:
 class Foo:
     source: SourceCollection
     packages: Optional[PackageCollection] = None
-    dev_packages: PackageCollection
-    requires: Requires
-    scripts: ScriptCollection
-    pipfile: PipfileSection
-    pipenv: Pipenv
+    dev_packages: Optional[PackageCollection] = None
+    requires: Optional[Requires] = None
+    scripts: Optional[ScriptCollection] = None
+    pipfile: Optional[PipfileSection] = None
+    pipenv: Optional[Pipenv] = None
 
     @classmethod
     def load(cls, f, encoding=None):
