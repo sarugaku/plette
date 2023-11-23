@@ -71,6 +71,9 @@ class Pipfile:
             return SourceCollection(value)
         return SourceCollection(value.value)
 
+    def validate_pipenv(self, value, field):
+        return Pipenv(**value)
+
     def to_dict(self):
         data = {
             "_meta": {
