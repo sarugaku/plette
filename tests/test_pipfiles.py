@@ -1,7 +1,5 @@
 import textwrap
 
-import pytest
-
 from plette import Pipfile
 from plette.models import PackageCollection, SourceCollection
 
@@ -52,6 +50,7 @@ def test_pipfile_load(tmpdir):
         jinja2 = '*'   # A comment.
     """))
     p = Pipfile.load(fi)
+
     assert p.source == SourceCollection([
         {
             'url': 'https://pypi.org/simple',
@@ -59,10 +58,10 @@ def test_pipfile_load(tmpdir):
             'name': 'pypi',
         },
     ])
-    assert p["packages"] == PackageCollection(**{
+    assert p.packages == {
         "flask": {"version": "*"},
         "jinja2": "*",
-    })
+    }
 
 
 def test_pipfile_preserve_format(tmpdir):

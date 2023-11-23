@@ -41,6 +41,22 @@ class Pipfile:
     pipfile: Optional[PipfileSection] = None
     pipenv: Optional[Pipenv] = None
 
+    def __post_init__(self):
+        """Run validation methods if declared.
+        The validation method can be a simple check
+        that raises ValueError or a transformation to
+        the field value.
+        The validation is performed by calling a function named:
+            `validate_<field_name>(self, value, field) -> field.type`
+        """
+
+        for name, field in self.__dataclass_fields__.items():
+            if (method := getattr(self, f"validate_{name}", None)):
+                setattr(self, name, method(getattr(self, name), field=field))
+
+    def validate_sources(self, value, field):
+        return SourceCollection(value.value)
+
     def get_hash(self):
         data = {
             "_meta": {
@@ -73,131 +89,17 @@ class Pipfile:
             sep = "" if content.startswith("\n") else "\n"
             content = DEFAULT_SOURCE_TOML + sep + content
         data = tomlkit.loads(content)
-        return cls(data)
+        data["sources"] = data.pop("source")
+        return cls(**data)
 
     @property
     def source(self):
-        return self.sources[0]
-
-
-class Foo:
-    source: SourceCollection
-    packages: Optional[PackageCollection] = None
-    dev_packages: Optional[PackageCollection] = None
-    requires: Optional[Requires] = None
-    scripts: Optional[ScriptCollection] = None
-    pipfile: Optional[PipfileSection] = None
-    pipenv: Optional[Pipenv] = None
-
-    @classmethod
-    def load(cls, f, encoding=None):
-        content = f.read()
-        if encoding is not None:
-            content = content.decode(encoding)
-        data = tomlkit.loads(content)
-        if "source" not in data:
-            # HACK: There is no good way to prepend a section to an existing
-            # TOML document, but there's no good way to copy non-structural
-            # content from one TOML document to another either. Modify the
-            # TOML content directly, and load the new in-memory document.
-            sep = "" if content.startswith("\n") else "\n"
-            content = DEFAULT_SOURCE_TOML + sep + content
-        data = tomlkit.loads(content)
-        return cls(data)
-
-    def __getitem__(self, key):
-        value = self[key]
-        try:
-            return PIPFILE_SECTIONS[key](value)
-        except KeyError:
-            return value
-
-    def get_hash(self):
-        data = {
-            "_meta": {
-                "sources": self["source"],
-                "requires": getattr(self, "requires", {}),
-            },
-            "default": getattr(self, "packages", {}),
-            "develop": getattr(self, "dev-packages", {}),
-        }
-        for category, values in self.__dict__.items():
-            if category in PIPFILE_SECTIONS or category in ("default", "develop", "pipenv"):
-                continue
-            data[category] = values
-        content = json.dumps(data, sort_keys=True, separators=(",", ":"))
-        if isinstance(content, str):
-            content = content.encode("utf-8")
-        return Hash.from_hash(hashlib.sha256(content))
+        return self.sources
 
     def dump(self, f, encoding=None):
-        content = tomlkit.dumps(self._data)
+        content = tomlkit.dumps(self)
         if encoding is not None:
             content = content.encode(encoding)
         f.write(content)
 
-    @property
-    def sources(self):
-        try:
-            return self["source"]
-        except KeyError:
-            raise AttributeError("sources")
-
-    @sources.setter
-    def sources(self, value):
-        self["source"] = value
-
-    @property
-    def source(self):
-        try:
-            return self["source"]
-        except KeyError:
-            raise AttributeError("source")
-
-    @source.setter
-    def source(self, value):
-        self["source"] = value
-
-    @property
-    def packages(self):
-        try:
-            return self["packages"]
-        except KeyError:
-            raise AttributeError("packages")
-
-    @packages.setter
-    def packages(self, value):
-        self["packages"] = value
-
-    @property
-    def dev_packages(self):
-        try:
-            return self["dev-packages"]
-        except KeyError:
-            raise AttributeError("dev-packages")
-
-    @dev_packages.setter
-    def dev_packages(self, value):
-        self["dev-packages"] = value
-
-    @property
-    def requires(self):
-        try:
-            return self["requires"]
-        except KeyError:
-            raise AttributeError("requires")
-
-    @requires.setter
-    def requires(self, value):
-        self["requires"] = value
-
-    @property
-    def scripts(self):
-        try:
-            return self["scripts"]
-        except KeyError:
-            raise AttributeError("scripts")
-
-    @scripts.setter
-    def scripts(self, value):
-        self["scripts"] = value
+    # todo add a method make pipfile behave like a dict so dump works
