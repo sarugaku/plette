@@ -20,7 +20,6 @@ class Source:
     """
     name: str
     verify_ssl: bool
-    #url: Optional[str] = None
     url: str
 
     @property

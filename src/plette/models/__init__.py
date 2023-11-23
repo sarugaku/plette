@@ -5,11 +5,6 @@ __all__ = [
     "Meta", "PackageCollection", "ScriptCollection", "SourceCollection",
 ]
 
-from .base import (
-    DataView, NewDataView, DataViewCollection, DataViewMapping, DataViewSequence,
-    validate, ValidationError,
-)
-
 from .hashes import Hash
 from .packages import Package
 from .scripts import Script

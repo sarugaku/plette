@@ -135,7 +135,7 @@ def test_lockfile_from_pipfile_meta():
     lockfile = Lockfile.with_meta_from(pipfile)
 
     pipfile.requires["python_version"] = "3.8"
-    pipfile.sources.append({
+    pipfile.sources.sources.append({
         "name": "devpi",
         "url": "http://localhost/simple",
         "verify_ssl": True,

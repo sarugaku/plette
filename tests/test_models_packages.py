@@ -14,7 +14,7 @@ def test_package_dict():
 
 def test_package_version_is_none():
     p = Package(**{"path": ".", "editable": True})
-    assert p.version == None
+    assert p.version == "*"
     assert p.editable is True
 
 def test_package_with_wrong_extras():
@@ -36,4 +36,4 @@ def test_package_with_extras():
 def test_package_wrong_key():
     p = Package(**{"path": ".", "editable": True})
     assert p.editable is True
-    assert p.version is None
+    assert p.version is "*"

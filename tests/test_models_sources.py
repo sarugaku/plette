@@ -1,4 +1,6 @@
+import pytest
 from plette.models.sources import Source
+from plette import models
 
 def test_source_from_data():
     s = Source(

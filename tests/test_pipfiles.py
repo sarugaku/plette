@@ -73,17 +73,17 @@ def test_pipfile_preserve_format(tmpdir):
         jinja2 = '*'
         """,
     ))
-    p = Pipfile.load(fi)
-    p.source.verify_ssl = False
+    pf= Pipfile.load(fi)
+    pf.source[0].verify_ssl = False
 
     fo = tmpdir.join("Pipfile.out")
-    p.dump(fo)
+    pf.dump(fo)
     assert fo.read() == textwrap.dedent(
         """\
         [[source]]
         name = "pypi"
-        url = "https://pypi.org/simple"
         verify_ssl = false
+        url = "https://pypi.org/simple"
 
         [packages]
         flask = { version = "*" }

@@ -8,21 +8,21 @@ import numbers
 
 import collections.abc as collections_abc
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import Optional
 
 from .models import Meta, PackageCollection, Package
 
 def flatten_versions(d):
- copy = {}
- # Iterate over a copy of the dictionary
- for key, value in d.items():
-     # If the value is a dictionary, call the function recursively
-     #if isinstance(value, dict):
-     #    flatten_dict(value)
-     # If the key is "version", replace the key with the value
-     copy[key] = value["version"]
- return copy
+    copy = {}
+    # Iterate over a copy of the dictionary
+    for key, value in d.items():
+        # If the value is a dictionary, call the function recursively
+        #if isinstance(value, dict):
+        #    flatten_dict(value)
+        # If the key is "version", replace the key with the value
+        copy[key] = value["version"]
+    return copy
 
 def remove_empty_values(d):
     #  Iterate over a copy of the dictionary
@@ -131,9 +131,9 @@ class Lockfile:
                 "hash": pipfile.get_hash().__dict__,
                 "pipfile-spec": PIPFILE_SPEC_CURRENT,
                 "requires": _copy_jsonsafe(getattr(pipfile, "requires", {})),
-                "sources": _copy_jsonsafe(pipfile.sources),
             },
         }
+        data["_meta"].update(asdict(pipfile.sources))
         if categories is None:
             data["default"] = _copy_jsonsafe(getattr(pipfile, "packages", {}))
             data["develop"] = _copy_jsonsafe(getattr(pipfile, "dev-packages", {}))
