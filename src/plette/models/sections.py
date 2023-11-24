@@ -172,7 +172,8 @@ class Meta:
 @dataclass
 class Pipenv:
     """Represent the [pipenv] section in Pipfile"""
-    allow_prereleases: Optional[bool]
+    allow_prereleases: Optional[bool] = False
+    install_search_all_sources: Optional[bool] = True
 
     def __post_init__(self):
         """Run validation methods if declared.
@@ -189,5 +190,10 @@ class Pipenv:
     def validate_allow_prereleases(self, value, field):
         if not isinstance(value, bool):
             raise ValidationError('allow_prereleases must be a boolean')
+        return value
 
+    def validate_install_search_all_sources(self, value, field):
+        if not isinstance(value, bool):
+            raise ValidationError('install_search_all_sources must be a boolean')
 
+        return value

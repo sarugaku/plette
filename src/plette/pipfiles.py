@@ -75,6 +75,9 @@ class Pipfile:
         if value is not None:
             return Pipenv(**value)
 
+    def validate_packages(self, value, field):
+        return value
+
     def to_dict(self):
         data = {
             "_meta": {
@@ -113,7 +116,17 @@ class Pipfile:
             content = DEFAULT_SOURCE_TOML + sep + content
         data = tomlkit.loads(content)
         data["sources"] = data.pop("source")
-        return cls(**data)
+        packages_sections = {}
+        data_sections = list(data.keys())
+        for k in data_sections:
+            if k not in cls.__dataclass_fields__:
+                packages_sections[k] = data.pop(k)
+
+        inst = cls(**data)
+        if packages_sections:
+            for k, v in packages_sections.items():
+                setattr(inst, k, v)
+        return inst
 
     @property
     def source(self):
