@@ -187,7 +187,6 @@ class Pipenv:
                 setattr(self, name, method(getattr(self, name), field=field))
 
     def validate_allow_prereleases(self, value, field):
-        import pdb; pdb.set_trace()
         if not isinstance(value, bool):
             raise ValidationError('allow_prereleases must be a boolean')
 

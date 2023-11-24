@@ -72,7 +72,8 @@ class Pipfile:
         return SourceCollection(value.value)
 
     def validate_pipenv(self, value, field):
-        return Pipenv(**value)
+        if value is not None:
+            return Pipenv(**value)
 
     def to_dict(self):
         data = {
