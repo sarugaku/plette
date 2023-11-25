@@ -1,3 +1,5 @@
+# this file contains a section with one package with wrong extras
+# extras should be passed as a list
 [packages]
 plette = { path = '.', extras = ['validation'], editable = true }
 

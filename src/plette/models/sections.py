@@ -29,8 +29,15 @@ class PackageCollection:
                 setattr(self, name, method(getattr(self, name), field=field))
 
     def validate_packages(self, value, field):
-        packages = {k:Package(v) for k, v in value.items()}
-        return packages
+        if isinstance(value, dict):
+            packages = {}
+            for k, v in value.items():
+                if isinstance(v, dict):
+                    packages[k] = Package(**v)
+                else:
+                    packages[k] = Package(version=v)
+            return packages
+
 
 @dataclass
 class ScriptCollection:

@@ -76,6 +76,7 @@ class Pipfile:
             return Pipenv(**value)
 
     def validate_packages(self, value, field):
+        PackageCollection(value)
         return value
 
     def to_dict(self):
@@ -125,7 +126,7 @@ class Pipfile:
         inst = cls(**data)
         if packages_sections:
             for k, v in packages_sections.items():
-                setattr(inst, k, v)
+                setattr(inst, k, PackageCollection(v))
         return inst
 
     @property
