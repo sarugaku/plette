@@ -1,5 +1,5 @@
 import pytest
-from plette.models.sources import Source
+from plette.models import Source
 from plette import models
 
 def test_source_from_data():
@@ -51,7 +51,7 @@ def test_validation_error():
 
     data["url"]  = "http://localhost:8000"
 
-    with pytest.raises(models.base.ValidationError) as exc_info:
+    with pytest.raises(models.ValidationError) as exc_info:
         Source(**data)
 
     error_message = str(exc_info.value)

@@ -1,11 +1,13 @@
 import hashlib
 import json
 
-import tomlkit
-
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 
 from typing import Optional
+
+import tomlkit
+
+
 from .models import (
     Hash, Requires, PipfileSection, Pipenv,
     PackageCollection, ScriptCollection, SourceCollection,

@@ -11,7 +11,7 @@ valid_files = glob.glob("examples/*ok*")
 @pytest.mark.parametrize("fname", invalid_files)
 def test_invalid_files(fname):
     
-    with pytest.raises(plette.models.base.ValidationError):
+    with pytest.raises(plette.models.ValidationError):
         with open(fname) as f:
             pipfile = Pipfile.load(f)
 

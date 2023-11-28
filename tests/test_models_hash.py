@@ -1,6 +1,6 @@
 import hashlib
 
-from plette.models.hashes import Hash
+from plette.models import Hash
 
 def test_hash_from_hash():
     v = hashlib.md5(b"foo")
