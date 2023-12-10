@@ -24,7 +24,7 @@ class BaseModel:
         that raises ValueError or a transformation to
         the field value.
         The validation is performed by calling a function named:
-            `validate_<field_name>(self, value, field) -> field.type`
+            `validate_<field_name>(self, value) -> field.type`
         """
         for name, _ in self.__dataclass_fields__.items():
             if (method := getattr(self, f"validate_{name}", None)):
@@ -98,9 +98,9 @@ class Source(BaseModel):
     def url_expanded(self):
         return os.path.expandvars(self.url)
 
-    def validate_verify_ssl(self, value, field):
+    def validate_verify_ssl(self, value):
         if not isinstance(value, bool):
-            raise ValidationError(f"{field.name}: must be of boolean type")
+            raise ValidationError("verify_ssl: must be of boolean type")
         return value
 
 
