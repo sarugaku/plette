@@ -133,20 +133,23 @@ class Lockfile(BaseModel):
                 "requires": _copy_jsonsafe(getattr(pipfile, "requires", {})),
             },
         }
+
         data["_meta"].update(asdict(pipfile.sources))
+
         if categories is None:
             data["default"] = _copy_jsonsafe(getattr(pipfile, "packages", {}))
             data["develop"] = _copy_jsonsafe(getattr(pipfile, "dev-packages", {}))
         else:
             for category in categories:
-                if category == "default" or category == "packages":
+                if category in ["default", "packages"]:
                     data["default"] = _copy_jsonsafe(getattr(pipfile,"packages", {}))
-                elif category == "develop" or category == "dev-packages":
-                    data["develop"] = _copy_jsonsafe(getattr(pipfile,"dev-packages", {}))
+                elif category in ["develop", "dev-packages"]:
+                    data["develop"] = _copy_jsonsafe(
+                            getattr(pipfile,"dev-packages", {}))
                 else:
                     data[category] = _copy_jsonsafe(getattr(pipfile, category, {}))
         if "default" not in data:
-            data["default"]  = {}
+            data["default"] = {}
         if "develop" not in data:
             data["develop"] = {}
         return cls(data)
@@ -155,7 +158,7 @@ class Lockfile(BaseModel):
         value = self[key]
         try:
             if key == "_meta":
-                return Meta(value)
+                return Meta(**value)
             return PackageCollection(value)
         except KeyError:
             return value
