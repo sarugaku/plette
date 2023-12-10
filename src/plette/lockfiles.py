@@ -11,7 +11,7 @@ import collections.abc as collections_abc
 from dataclasses import dataclass, field, asdict
 from typing import Optional
 
-from .models import BaseModel, Meta, PackageCollection, Package
+from .models import BaseModel, Meta, PackageCollection, Package, remove_empty_values
 
 PIPFILE_SPEC_CURRENT = 6
 
@@ -20,26 +20,9 @@ def flatten_versions(d):
     copy = {}
     # Iterate over a copy of the dictionary
     for key, value in d.items():
-        # If the value is a dictionary, call the function recursively
-        #if isinstance(value, dict):
-        #    flatten_dict(value)
         # If the key is "version", replace the key with the value
         copy[key] = value["version"]
     return copy
-
-
-def remove_empty_values(d):
-    #  Iterate over a copy of the dictionary
-    for key, value in list(d.items()):
-        # If the value is a dictionary, call the function recursively
-        if isinstance(value, dict):
-            remove_empty_values(value)
-            # If the dictionary is empty, remove the key
-            if not value:
-                del d[key]
-        # If the value is None or an empty string, remove the key
-        elif value is None or value == '':
-            del d[key]
 
 
 class DCJSONEncoder(json.JSONEncoder):

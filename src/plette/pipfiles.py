@@ -12,21 +12,8 @@ from .models import (
     BaseModel,
     Hash, Requires, PipfileSection, Pipenv,
     PackageCollection, ScriptCollection, SourceCollection,
+    remove_empty_values
 )
-
-
-def remove_empty_values(d):
-    #  Iterate over a copy of the dictionary
-    for key, value in list(d.items()):
-        # If the value is a dictionary, call the function recursively
-        if isinstance(value, dict):
-            remove_empty_values(value)
-            # If the dictionary is empty, remove the key
-            if not value:
-                del d[key]
-        # If the value is None or an empty string, remove the key
-        elif value is None or value == '':
-            del d[key]
 
 
 PIPFILE_SECTIONS = {
