@@ -140,5 +140,3 @@ class Pipfile(BaseModel):
         if encoding is not None:
             content = content.encode(encoding)
         f.write(content)
-
-    # todo add a method make pipfile behave like a dict so dump works
