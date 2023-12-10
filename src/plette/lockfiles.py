@@ -85,7 +85,7 @@ def _copy_jsonsafe(value):
 class Lockfile(BaseModel):
     """Representation of a Pipfile.lock."""
 
-    _meta: field(init=False)
+    _meta: Optional[Meta]
     default: Optional[dict] =  field(default_factory=dict)
     develop: Optional[dict] = field(default_factory=dict)
 
@@ -97,11 +97,7 @@ class Lockfile(BaseModel):
         The validation is performed by calling a function named:
             `validate_<field_name>(self, value, field) -> field.type`
         """
-
-        for name, field in self.__dataclass_fields__.items():
-            if (method := getattr(self, f"validate_{name}", None)):
-                setattr(self, name, method(getattr(self, name), field=field))
-
+        super().__post_init__()
         self.meta = self._meta
 
     def validate__meta(self, value, field):
