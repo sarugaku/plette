@@ -140,13 +140,6 @@ class Package(BaseModel):
 
         raise ValidationError(f"Unknown type {type(value)} for version")
 
-    def validate_extras(self, value, field):
-        if value is None:
-            return value
-        if not (isinstance(value, list) and all(isinstance(i, str) for i in value)):
-            raise ValidationError("Extras must be a list or None")
-        return value
-
 
 @dataclass(init=False)
 class Script(BaseModel):
