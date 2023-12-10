@@ -11,7 +11,10 @@ import collections.abc as collections_abc
 from dataclasses import dataclass, field, asdict
 from typing import Optional
 
-from .models import Meta, PackageCollection, Package
+from .models import BaseModel, Meta, PackageCollection, Package
+
+PIPFILE_SPEC_CURRENT = 6
+
 
 def flatten_versions(d):
     copy = {}
@@ -23,6 +26,7 @@ def flatten_versions(d):
         # If the key is "version", replace the key with the value
         copy[key] = value["version"]
     return copy
+
 
 def remove_empty_values(d):
     #  Iterate over a copy of the dictionary
@@ -36,6 +40,7 @@ def remove_empty_values(d):
         # If the value is None or an empty string, remove the key
         elif value is None or value == '':
             del d[key]
+
 
 class DCJSONEncoder(json.JSONEncoder):
     def default(self, o):
@@ -61,8 +66,6 @@ class DCJSONEncoder(json.JSONEncoder):
             return o
         return super().default(o)
 
-PIPFILE_SPEC_CURRENT = 6
-
 
 def _copy_jsonsafe(value):
     """Deep-copy a value into JSON-safe types.
@@ -79,8 +82,9 @@ def _copy_jsonsafe(value):
 
 
 @dataclass
-class Lockfile:
+class Lockfile(BaseModel):
     """Representation of a Pipfile.lock."""
+
     _meta: field(init=False)
     default: Optional[dict] =  field(default_factory=dict)
     develop: Optional[dict] = field(default_factory=dict)
@@ -156,15 +160,14 @@ class Lockfile:
         try:
             if key == "_meta":
                 return Meta(value)
-            else:
-                return PackageCollection(value)
+            return PackageCollection(value)
         except KeyError:
             return value
 
     def is_up_to_date(self, pipfile):
         return self.meta.hash == pipfile.get_hash()
 
-    def dump(self, fh, encoding=None):
+    def dump(self, fh):
         json.dump(self, fh, cls=DCJSONEncoder)
         self.meta = self._meta
 
