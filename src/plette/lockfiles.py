@@ -95,15 +95,15 @@ class Lockfile(BaseModel):
         that raises ValueError or a transformation to
         the field value.
         The validation is performed by calling a function named:
-            `validate_<field_name>(self, value, field) -> field.type`
+            `validate_<field_name>(self, value) -> field.type`
         """
         super().__post_init__()
         self.meta = self._meta
 
-    def validate__meta(self, value, field):
-        return self.validate_meta(value, field)
+    def validate__meta(self, value):
+        return self.validate_meta(value)
 
-    def validate_meta(self, value, field):
+    def validate_meta(self, value):
         if "_meta" in value:
             value = value["_meta"]
         if 'pipfile-spec' in value:

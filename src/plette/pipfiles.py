@@ -59,17 +59,17 @@ class Pipfile(BaseModel):
     pipfile: Optional[PipfileSection] = None
     pipenv: Optional[Pipenv] = None
 
-    def validate_sources(self, value, field):
+    def validate_sources(self, value):
         if isinstance(value, list):
             return SourceCollection(value)
         return SourceCollection(value.value)
 
-    def validate_pipenv(self, value, field):
+    def validate_pipenv(self, value):
         if value is not None:
             return Pipenv(**value)
         return value
 
-    def validate_packages(self, value, field):
+    def validate_packages(self, value):
         PackageCollection(value)
         return value
 
