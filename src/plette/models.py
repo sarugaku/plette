@@ -206,6 +206,7 @@ class Script(BaseModel):
 
 @dataclass
 class PackageCollection(BaseModel):
+
     packages: List[Package]
 
     def validate_packages(self, value, field):
@@ -217,7 +218,7 @@ class PackageCollection(BaseModel):
                 else:
                     packages[k] = Package(version=v)
             return packages
-        raise ValidationError("Packages must be a dict or a Package instance")
+        return value
 
 
 @dataclass
