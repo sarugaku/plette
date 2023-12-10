@@ -9,9 +9,11 @@ import tomlkit
 
 
 from .models import (
+    BaseModel,
     Hash, Requires, PipfileSection, Pipenv,
     PackageCollection, ScriptCollection, SourceCollection,
 )
+
 
 def remove_empty_values(d):
     #  Iterate over a copy of the dictionary
@@ -25,6 +27,7 @@ def remove_empty_values(d):
         # If the value is None or an empty string, remove the key
         elif value is None or value == '':
             del d[key]
+
 
 PIPFILE_SECTIONS = {
     "sources": SourceCollection,
@@ -43,8 +46,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 """
 
+
 @dataclass
-class Pipfile:
+class Pipfile(BaseModel):
     """Representation of a Pipfile."""
     sources: SourceCollection
     packages: Optional[PackageCollection] = None
@@ -55,19 +59,6 @@ class Pipfile:
     pipfile: Optional[PipfileSection] = None
     pipenv: Optional[Pipenv] = None
 
-    def __post_init__(self):
-        """Run validation methods if declared.
-        The validation method can be a simple check
-        that raises ValueError or a transformation to
-        the field value.
-        The validation is performed by calling a function named:
-            `validate_<field_name>(self, value, field) -> field.type`
-        """
-
-        for name, field in self.__dataclass_fields__.items():
-            if (method := getattr(self, f"validate_{name}", None)):
-                setattr(self, name, method(getattr(self, name), field=field))
-
     def validate_sources(self, value, field):
         if isinstance(value, list):
             return SourceCollection(value)
@@ -76,6 +67,7 @@ class Pipfile:
     def validate_pipenv(self, value, field):
         if value is not None:
             return Pipenv(**value)
+        return value
 
     def validate_packages(self, value, field):
         PackageCollection(value)
@@ -91,7 +83,8 @@ class Pipfile:
         }
         data["_meta"].update(asdict(getattr(self, "sources", {})))
         for category, values in self.__dict__.items():
-            if category in PIPFILE_SECTIONS or category in ("default", "develop", "pipenv"):
+            if category in PIPFILE_SECTIONS or category in (
+                    "default", "develop", "pipenv"):
                 continue
             data[category] = values
         remove_empty_values(data)
