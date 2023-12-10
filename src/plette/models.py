@@ -26,9 +26,9 @@ class BaseModel:
         The validation is performed by calling a function named:
             `validate_<field_name>(self, value, field) -> field.type`
         """
-        for name, field in self.__dataclass_fields__.items():
+        for name, _ in self.__dataclass_fields__.items():
             if (method := getattr(self, f"validate_{name}", None)):
-                setattr(self, name, method(getattr(self, name), field=field))
+                setattr(self, name, method(getattr(self, name)))
 
 
 @dataclass
@@ -37,13 +37,13 @@ class Hash(BaseModel):
     name: str
     value: str
 
-    def validate_name(self, value, field):
+    def validate_name(self, value):
         if not isinstance(value, str):
             raise ValueError("Hash.name must be a string")
 
         return value
 
-    def validate_value(self, value, field):
+    def validate_value(self, value):
         if not isinstance(value, str):
             raise ValueError("Hash.value must be a string")
 
@@ -109,7 +109,7 @@ class PackageSpecfiers(BaseModel):
 
     extras: List[str]
 
-    def validate_extras(self, value, field):
+    def validate_extras(self, value):
         if not isinstance(value, list):
             raise ValidationError("Extras must be a list")
 
@@ -123,14 +123,14 @@ class Package(BaseModel):
     extras: Optional[PackageSpecfiers] = None
     path: Optional[str] = None
 
-    def validate_extras(self, value, field):
+    def validate_extras(self, value):
         if value is None:
             return value
         if not (isinstance(value, list) and all(isinstance(i, str) for i in value)):
             raise ValidationError("Extras must be a list or None")
         return value
 
-    def validate_version(self, value, field):
+    def validate_version(self, value):
         if isinstance(value, dict):
             return value
         if isinstance(value, str):
@@ -209,7 +209,7 @@ class PackageCollection(BaseModel):
 
     packages: List[Package]
 
-    def validate_packages(self, value, field):
+    def validate_packages(self, value):
         if isinstance(value, dict):
             packages = {}
             for k, v in value.items():
@@ -231,7 +231,7 @@ class SourceCollection(BaseModel):
 
     sources: List[Source]
 
-    def validate_sources(self, value, field):
+    def validate_sources(self, value):
         sources = []
         for v in value:
             if isinstance(v, dict):
@@ -305,19 +305,19 @@ class Meta(BaseModel):
     def from_dict(cls, d: dict) -> "Meta":
         return cls(**{k.replace('-', '_'): v for k, v in d.items()})
 
-    def validate_hash(self, value, field):
+    def validate_hash(self, value):
         try:
             return Hash(**value)
         except TypeError:
             return Hash.from_line(value)
 
-    def validate_requires(self, value, field):
+    def validate_requires(self, value):
         return Requires(value)
 
-    def validate_sources(self, value, field):
+    def validate_sources(self, value):
         return SourceCollection(value)
 
-    def validate_pipfile_spec(self, value, field):
+    def validate_pipfile_spec(self, value):
         if int(value) != 6:
             raise ValueError('Only pipefile-spec version 6 is supported')
         return value
@@ -329,12 +329,12 @@ class Pipenv(BaseModel):
     allow_prereleases: Optional[bool] = False
     install_search_all_sources: Optional[bool] = True
 
-    def validate_allow_prereleases(self, value, field):
+    def validate_allow_prereleases(self, value):
         if not isinstance(value, bool):
             raise ValidationError('allow_prereleases must be a boolean')
         return value
 
-    def validate_install_search_all_sources(self, value, field):
+    def validate_install_search_all_sources(self, value):
         if not isinstance(value, bool):
             raise ValidationError('install_search_all_sources must be a boolean')
 

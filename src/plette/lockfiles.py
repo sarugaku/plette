@@ -110,7 +110,7 @@ class Lockfile(BaseModel):
             value['pipfile_spec'] = value.pop('pipfile-spec')
         return Meta(**value)
 
-    def validate_default(self, value, field):
+    def validate_default(self, value):
         packages = {}
         for name, spec in value.items():
             packages[name] = Package(spec)
