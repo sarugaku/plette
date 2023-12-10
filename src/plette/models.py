@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 from typing import Optional, List, Union
 
+
 class ValidationError(ValueError):
     pass
 
@@ -28,6 +29,7 @@ class BaseModel:
         for name, field in self.__dataclass_fields__.items():
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name), field=field))
+
 
 @dataclass
 class Hash(BaseModel):
@@ -96,22 +98,11 @@ class Source(BaseModel):
     def url_expanded(self):
         return os.path.expandvars(self.url)
 
-    def __post_init__(self):
-        """Run validation methods if declared.
-        The validation method can be a simple check
-        that raises ValueError or a transformation to
-        the field value.
-        The validation is performed by calling a function named:
-            `validate_<field_name>(self, value, field) -> field.type`
-        """
-        for name, field in self.__dataclass_fields__.items():
-            if (method := getattr(self, f"validate_{name}", None)):
-                setattr(self, name, method(getattr(self, name), field=field))
-
     def validate_verify_ssl(self, value, field):
         if not isinstance(value, bool):
             raise ValidationError(f"{field.name}: must be of boolean type")
         return value
+
 
 @dataclass
 class PackageSpecfiers(BaseModel):
@@ -170,13 +161,13 @@ class Script(BaseModel):
         self._parts.extend(script[1:])
 
     def validate_script(self, value):
-        if not (isinstance(value, str) or \
+        if not (isinstance(value, str) or
                 (isinstance(value, list) and all(isinstance(i, str) for i in value))
                 ):
             raise ValueError("script must be a string or a list of strings")
 
     def __repr__(self):
-        return "Script({0!r})".format(self._parts)
+        return f"Script({self._parts!r})"
 
     @property
     def command(self):
@@ -219,6 +210,7 @@ class Script(BaseModel):
             for arg in parts
         )
 
+
 @dataclass
 class PackageCollection(BaseModel):
     packages: List[Package]
@@ -232,6 +224,7 @@ class PackageCollection(BaseModel):
                 else:
                     packages[k] = Package(version=v)
             return packages
+        raise ValidationError("Packages must be a dict or a Package instance")
 
 
 @dataclass
@@ -290,7 +283,6 @@ class Requires(BaseModel):
     python_full_version: Optional[str] = None
 
 
-
 META_SECTIONS = {
     "hash": Hash,
     "requires": Requires,
@@ -303,7 +295,7 @@ class PipfileSection(BaseModel):
 
     """
     Dummy pipfile validator that needs to be completed in a future PR
-    Hint: many pipfile features are undocumented in  pipenv/project.py
+    Hint: many pipfile features are undocumented in pipenv/project.py
     """
 
 
