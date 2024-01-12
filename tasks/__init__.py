@@ -53,7 +53,6 @@ def bump_release(ctx, type_):
         raise ValueError(f'{type_} not in {REL_TYPES}')
     index = REL_TYPES.index(type_)
     prev_version = _read_version()
-    import pdb; pdb.set_trace()
     if prev_version.is_prerelease:
         next_version = prev_version.base_version()
     else:

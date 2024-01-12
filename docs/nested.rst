@@ -12,46 +12,45 @@ Pipfile and Pipfile.lock, such as individual entries in ``[packages]``,
 ``[dev-packages]``, and ``lockfile['_meta']``.
 
 
-The Data View
-=============
+Base Model 
+===========
 
 Every non-scalar value you get from Plette (e.g. sequence, mapping) is
-represented as a `DataView`, or one of its subclasses. This class is simply a
-wrapper around the basic collection class, and you can access the underlying
-data structure via the ``_data`` attribute::
+represented inherits from `models.BaseModel`, which is a Python `dataclass`::
 
     >>> import plette.models
-    >>> source = plette.models.Source({
+    >>> source = plette.models.Source(**{
     ...     'name': 'pypi',
     ...     'url': 'https://pypi.org/simple',
     ...     'verify_ssl': True,
     ... })
     ...
-    >>> source._data
-    {'name': 'pypi', 'url': 'https://pypi.org/simple', 'verify_ssl': True}
+    >>> source
+    Source(name='pypi', verify_ssl=True, url='https://pypi.org/simple')
 
 
-Data View Collections
-=====================
+Collections
+===========
 
-There are two special collection classes, ``DataViewMapping`` and
-``DataViewSequence``, that hold homogeneous ``DataView`` members. They are
-also simply wrappers to ``dict`` and ``list``, respectively, but have specially
-implemented magic methods to automatically coerce contained data into a
-``DataView`` subclass::
+There a few special collection classes, which can be I dentified by the
+suffix ``Collection`` or ``Specifiers``.
+They group attributes and behave like ``list`` or ``mappings``.
+These classes accept a list of dictionaries as input,
+and convert them to the correct object type::
 
-    >>> sources = plette.models.SourceCollection([source._data])
-    >>> sources._data
-    [{'name': 'pypi', 'url': 'https://pypi.org/simple', 'verify_ssl': True}]
-    >>> type(sources[0])
-    <class 'plette.models.sources.Source'>
-    >>> sources[0] == source
-    True
-    >>> sources[0] = {
-    ...     'name': 'devpi',
-    ...     'url': 'http://localhost/simple',
-    ...     'verify_ssl': True,
-    ... }
-    ...
-    >>> sources._data
-    [{'name': 'devpi', 'url': 'http://localhost/simple', 'verify_ssl': True}]
+    >>> SourceCollection([{'name': 'r-pi', 'url': '192.168.1.129:8000', 'verify_ssl': False}, {'name': 'pypi', 'url': 'https://pypi.org/simple', 'verify_ssl': True}])
+    SourceCollection(sources=[Source(name='r-pi', verify_ssl=False, url='192.168.1.129:8000'), Source(name='pypi', verify_ssl=True, url='https://pypi.org/simple')])
+    
+
+In addition, they can also accept a list of items of the correct type::
+
+    >>> rpi = models.Source(**{'name': 'r-pi', 'url': '192.168.1.129:8000', 'verify_ssl': False})
+    >>> pypi = models.Source(**{'name': 'pypi', 'url': 'https://pypi.org/simple', 'verify_ssl': True})
+    >>> SourceCollection([rpi, pypi])
+    SourceCollection(sources=[Source(name='r-pi', verify_ssl=False, url='192.168.1.129:8000'), Source(name='pypi', verify_ssl=True, url='https://pypi.org/simple')])
+
+They can also be indexed by name, and can be iterated over::
+
+    >>> sc = SourceCollection([{'name': 'r-pi', 'url': '192.168.1.129:8000', 'verify_ssl': False}, {'name': 'pypi', 'url': 'https://pypi.org/simple', 'verify_ssl': True}])
+    >>> sc[0]
+    Source(name='r-pi', verify_ssl=False, url='192.168.1.129:8000')
