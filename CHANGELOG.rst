@@ -1,3 +1,8 @@
+1.0.0 (2024-04-04)
+==================
+ - Rewrite the entire library using dataclasses.
+ - Add more rigorous testing.
+
 0.4.4 (2022-12-15)
 ==================
 
