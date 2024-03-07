@@ -30,7 +30,7 @@ def test_lockfile_load_sources(tmpdir):
             },
             "default": {
                 "flask": {"version": "*"},
-                "jinja2": "*"
+                "jinja2": {"version": "*"}
             },
             "develop": {}
         }
@@ -65,14 +65,16 @@ def test_lockfile_load_sources_package_spec(tmpdir):
             },
             "default": {
                 "flask": {"version": "*"},
-                "jinja2": "*"
+                "jinja2": {
+                    "version": "*"
+                }
             },
             "develop": {}
         }
         """,
     ).replace("____hash____", HASH))
     lock = Lockfile.load(fi)
-    assert lock.default["jinja2"] == Package("*")
+    assert lock.default["jinja2"] == Package(name='jinja2', version='*')
 
 
 def test_lockfile_dump_format(tmpdir):
@@ -97,7 +99,9 @@ def test_lockfile_dump_format(tmpdir):
                 "flask": {
                     "version": "*"
                 },
-                "jinja2": "*"
+                "jinja2": {
+                    "version": "*"
+                }
             },
             "develop": {}
         }
@@ -150,3 +154,39 @@ def test_lockfile_from_pipfile_meta():
             "verify_ssl": True,
         },
     ])
+
+
+def test_lock_file_access_property(tmpdir):
+    content = textwrap.dedent(
+        """\
+        {
+            "_meta": {
+                "hash": {
+                    "sha256": "____hash____"
+                },
+                "pipfile-spec": 6,
+                "requires": {},
+                "sources": [
+                    {
+                        "name": "pypi",
+                        "url": "https://pypi.org/simple",
+                        "verify_ssl": true
+                    }
+                ]
+            },
+            "default": {
+                "flask": {
+                    "version": "*"
+                },
+                "jinja2": "*"
+            },
+            "develop": {}
+        }
+        """,
+    ).replace("____hash____", HASH)
+
+    fi = tmpdir.join("in.json")
+    fi.write(content)
+    lock = Lockfile.load(fi)
+
+    assert lock["default"] == lock.default

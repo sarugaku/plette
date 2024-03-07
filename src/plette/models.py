@@ -131,6 +131,7 @@ class PackageSpecfiers(BaseModel):
 @dataclass
 class Package(BaseModel):
 
+    name: str
     version: Union[Optional[str],Optional[dict]] = "*"
     specifiers: Optional[PackageSpecfiers] = None
     editable: Optional[bool] = None
@@ -233,6 +234,12 @@ class PackageCollection(BaseModel):
                     packages[k] = Package(version=v)
             return packages
         return value
+
+    def __getitem__(self, item):
+        for p in self.packages:
+            if p.name == item:
+                return p
+        raise KeyError(f"Package {item} not found")
 
 
 @dataclass

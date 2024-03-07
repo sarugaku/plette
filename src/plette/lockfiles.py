@@ -25,7 +25,18 @@ def flatten_versions(d):
     return copy
 
 
+def packages_to_dict(packages):
+    packages_as_dict = {}
+    for package in packages:
+        name = package.pop("name")
+        values = {k: v for k, v in package.items() if v}
+        packages_as_dict[name] = values
+
+    return packages_as_dict
+
+
 class DCJSONEncoder(json.JSONEncoder):
+
     def default(self, o):
         if dataclasses.is_dataclass(o):
             o = dataclasses.asdict(o)
@@ -36,11 +47,10 @@ class DCJSONEncoder(json.JSONEncoder):
 
             remove_empty_values(o)
 
-            for section in ["default", "develop"]:
-                try:
-                    o[section] = flatten_versions(o[section])
-                except KeyError:
-                    continue
+            if "default" in o:
+                o["default"] = packages_to_dict(o["default"]["packages"])
+            if "develop" in o:
+                o["develop"] = packages_to_dict(o["develop"]["packages"])
             # add silly default values
             if "develop" not in o:
                 o["develop"] = {}
@@ -69,8 +79,8 @@ class Lockfile(BaseModel):
     """Representation of a Pipfile.lock."""
 
     _meta: Optional[Meta]
-    default: Optional[dict] =  field(default_factory=dict)
-    develop: Optional[dict] = field(default_factory=dict)
+    default: Optional = field(init=True,)
+    develop: Optional = field(init=True,)
 
     def __post_init__(self):
         """Run validation methods if declared.
@@ -94,10 +104,24 @@ class Lockfile(BaseModel):
         return Meta(**value)
 
     def validate_default(self, value):
+        if value is None:
+            return PackageCollection(packages=[])
+        packages = []
+        for name, spec in value.items():
+            if isinstance(spec, str):
+                spec = {"version": spec}
+            packages.append(Package(name=name, **spec))
+        return PackageCollection(packages=packages)
+
+    def validate_develop(self, value):
+        if value is None:
+            return PackageCollection(packages=[])
         packages = {}
         for name, spec in value.items():
-            packages[name] = Package(spec)
-        return packages
+            if isinstance(spec, str):
+                spec = {"version": spec}
+            packages.append(Package(name=name, **spec))
+        return PackageCollection(packages=packages)
 
     @classmethod
     def load(cls, fh, encoding=None):
@@ -135,23 +159,20 @@ class Lockfile(BaseModel):
             data["default"] = {}
         if "develop" not in data:
             data["develop"] = {}
-        return cls(data)
+        return cls(**data)
 
     def __getitem__(self, key):
-        value = self[key]
-        try:
-            if key == "_meta":
-                return Meta(**value)
-            return PackageCollection(value)
-        except KeyError:
-            return value
+        value = self.__dict__[key]
+        if key == "_meta":
+            return Meta(**value)
+        return value
 
     def is_up_to_date(self, pipfile):
         return self.meta.hash == pipfile.get_hash()
 
     def dump(self, fh):
-        json.dump(self, fh, cls=DCJSONEncoder)
         self.meta = self._meta
+        json.dump(self, fh, cls=DCJSONEncoder)
 
     @property
     def meta(self):
