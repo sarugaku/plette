@@ -136,6 +136,7 @@ class Package(BaseModel):
     editable: Optional[bool] = None
     extras: Optional[PackageSpecfiers] = None
     path: Optional[str] = None
+    sys_platform: Optional[str] = None
 
     def validate_extras(self, value):
         if value is None:
