@@ -6,7 +6,6 @@ import os
 import re
 import shlex
 
-
 from dataclasses import dataclass
 
 from typing import Optional, List, Union
@@ -132,7 +131,7 @@ class PackageSpecfiers(BaseModel):
 class Package(BaseModel):
 
     name: str
-    version: Union[Optional[str],Optional[dict]] = "*"
+    version: Optional[str] = "*"
     specifiers: Optional[PackageSpecfiers] = None
     editable: Optional[bool] = None
     extras: Optional[PackageSpecfiers] = None
@@ -229,9 +228,11 @@ class PackageCollection(BaseModel):
             packages = {}
             for k, v in value.items():
                 if isinstance(v, dict):
-                    packages[k] = Package(**v)
+                    packages[k] = Package(name=k, **v)
+                elif isinstance(v, str):
+                    packages[k] = Package(name=k, version=v)
                 else:
-                    packages[k] = Package(version=v)
+                    raise ValidationError(f"Invalid package specifier {k}: {v}")
             return packages
         return value
 
