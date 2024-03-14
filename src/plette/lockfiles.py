@@ -27,9 +27,9 @@ def flatten_versions(d):
 
 def packages_to_dict(packages):
     packages_as_dict = {}
-    for package in packages:
-        name = package.pop("name")
+    for name, package in packages.items():
         values = {k: v for k, v in package.items() if v}
+        values.pop("name")
         packages_as_dict[name] = values
 
     return packages_as_dict

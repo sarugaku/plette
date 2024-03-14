@@ -39,7 +39,6 @@ class Pipfile(BaseModel):
     """Representation of a Pipfile."""
     sources: SourceCollection
     packages: Optional[PackageCollection] = None
-    packages: Optional[PackageCollection] = None
     dev_packages: Optional[PackageCollection] = None
     requires: Optional[Requires] = None
     scripts: Optional[ScriptCollection] = None

@@ -250,10 +250,10 @@ class PackageCollection(BaseModel):
         return value
 
     def __getitem__(self, item):
-        for p in self.packages:
-            if p.name == item:
-                return p
-        raise KeyError(f"Package {item} not found")
+        try:
+            return self.packages[item]
+        except KeyError as exp:
+            raise KeyError(f"Package {item} not found") from exp
 
 
 @dataclass
