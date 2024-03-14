@@ -181,3 +181,8 @@ class Lockfile(BaseModel):
     @meta.setter
     def meta(self, value):
         self._meta = value
+
+
+    @property
+    def dev_packages(self):
+        return self.develop

@@ -116,6 +116,13 @@ class Source(BaseModel):
             raise ValidationError("verify_ssl: must be of boolean type")
         return value
 
+    def dump(self):
+        return {
+            "name": self.name,
+            "verify_ssl": self.verify_ssl,
+            "url": self.url
+        }
+
 
 @dataclass
 class PackageSpecfiers(BaseModel):
