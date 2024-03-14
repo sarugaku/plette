@@ -139,6 +139,7 @@ class Package(BaseModel):
     sys_platform: Optional[str] = None
     hashes: Optional[List[Hash]] = None
     markers: Optional[str] = None
+    index: Optional[str] = None
 
     def validate_extras(self, value):
         if value is None:
