@@ -105,22 +105,22 @@ class Lockfile(BaseModel):
 
     def validate_default(self, value):
         if value is None:
-            return PackageCollection(packages=[])
-        packages = []
-        for name, spec in value.items():
-            if isinstance(spec, str):
-                spec = {"version": spec}
-            packages.append(Package(name=name, **spec))
-        return PackageCollection(packages=packages)
-
-    def validate_develop(self, value):
-        if value is None:
-            return PackageCollection(packages=[])
+            return PackageCollection(packages={})
         packages = {}
         for name, spec in value.items():
             if isinstance(spec, str):
                 spec = {"version": spec}
-            packages.append(Package(name=name, **spec))
+            packages[name]=Package(name=name, **spec)
+        return PackageCollection(packages=packages)
+
+    def validate_develop(self, value):
+        if value is None:
+            return PackageCollection(packages={})
+        packages = {}
+        for name, spec in value.items():
+            if isinstance(spec, str):
+                spec = {"version": spec}
+            packages[name]=Package(name=name, **spec)
         return PackageCollection(packages=packages)
 
     @classmethod

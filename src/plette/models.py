@@ -235,6 +235,8 @@ class PackageCollection(BaseModel):
                     packages[k] = Package(name=k, **v)
                 elif isinstance(v, str):
                     packages[k] = Package(name=k, version=v)
+                elif isinstance(v, Package):
+                    packages[k] = v
                 else:
                     raise ValidationError(f"Invalid package specifier {k}: {v}")
             return packages
