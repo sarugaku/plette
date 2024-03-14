@@ -8,7 +8,7 @@ import shlex
 
 from dataclasses import dataclass
 
-from typing import Optional, List, Union
+from typing import Optional, Dict, List, Union
 
 
 class ValidationError(ValueError):
@@ -222,7 +222,7 @@ class Script(BaseModel):
 @dataclass
 class PackageCollection(BaseModel):
 
-    packages: List[Package]
+    packages: Dict[str, Package]
 
     def validate_packages(self, value):
         if isinstance(value, dict):
