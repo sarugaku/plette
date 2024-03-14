@@ -137,6 +137,8 @@ class Package(BaseModel):
     extras: Optional[PackageSpecfiers] = None
     path: Optional[str] = None
     sys_platform: Optional[str] = None
+    hashes: Optional[List[Hash]] = None
+    markers: Optional[str] = None
 
     def validate_extras(self, value):
         if value is None:
