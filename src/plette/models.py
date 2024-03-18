@@ -2,11 +2,12 @@
 # pylint: disable=missing-function-docstring
 # pylint: disable=no-member
 # pylint: disable=too-few-public-methods
+import json
 import os
 import re
 import shlex
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 from typing import Optional, Dict, List, Union
 
@@ -304,6 +305,15 @@ class SourceCollection(BaseModel):
 
     def __delitem__(self, key):
         del self.sources[key]
+
+    def __str__(self):
+        return json.dumps(self._dump())
+
+    def __repr__(self):
+        return str(self._dump())
+
+    def _dump(self):
+        return [asdict(s) for s in self.sources]
 
 
 @dataclass

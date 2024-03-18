@@ -172,7 +172,7 @@ class Lockfile(BaseModel):
 
     def dump(self, fh):
         self.meta = self._meta
-        json.dump(self, fh, cls=DCJSONEncoder)
+        return json.dump(self, fh, cls=DCJSONEncoder, indent=4)
 
     @property
     def meta(self):
