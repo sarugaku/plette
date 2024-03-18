@@ -3,14 +3,15 @@ A simple entry point which can be use to test Pipfiles
 
 e.g.
 
-python -m plette -f examples/Pipfile.valid.list 
+python -m plette -f examples/Pipfile.valid.list
 python -m plette -f examples/Pipfile.valid.editable
 # throws exception
-python -m plette -f examples/Pipfile.invalid.list  
+python -m plette -f examples/Pipfile.invalid.list
 
 """
 
 import argparse
+import sys
 
 import tomlkit
 
@@ -28,15 +29,15 @@ dest = args.file
 lockfile = None
 pipfile = None
 
-with open(dest) as f:
+with open(dest, encoding="utf-8") as f:
     try:
         pipfile = Pipfile.load(f)
     except tomlkit.exceptions.EmptyKeyError:
         f.seek(0)
         lockfile = Lockfile.load(f)
 
-if args.print:
-    if pipfile:
-        print(pipfile)
-    if lockfile:
-        print(lockfile)
+    if args.print:
+        if pipfile:
+            print(pipfile)
+        if lockfile:
+            lockfile.dump(sys.stdout)
