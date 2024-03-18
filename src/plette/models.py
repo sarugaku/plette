@@ -57,6 +57,12 @@ class BaseModel:
         value = self.__dict__[key]
         return value
 
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
 
 @dataclass
 class Hash(BaseModel):
