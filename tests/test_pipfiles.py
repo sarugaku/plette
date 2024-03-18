@@ -37,7 +37,7 @@ def test_source_section_transparent():
 def test_package_section():
     section = PackageCollection({
         "flask": {"version": "*"},
-        "jinja2": "*",
+        "jinja2": {"version": "*"},
     })
     assert section.packages["jinja2"].version == "*"
 

@@ -2,14 +2,14 @@
 # pylint: disable=missing-function-docstring
 # pylint: disable=no-member
 # pylint: disable=too-few-public-methods
+import json
 import os
 import re
 import shlex
 
+from dataclasses import dataclass, asdict
 
-from dataclasses import dataclass
-
-from typing import Optional, List, Union
+from typing import Optional, Dict, List, Union
 
 
 class ValidationError(ValueError):
@@ -43,6 +43,25 @@ class BaseModel:
         for name, _ in self.__dataclass_fields__.items():
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name)))
+
+    def __str__(self):
+        return json.dumps(self._dump())
+
+    def __repr__(self):
+        return str(self._dump())
+
+    def _dump(self):
+        return asdict(self)
+
+    def __getitem__(self, key):
+        value = self.__dict__[key]
+        return value
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
 
 
 @dataclass
@@ -95,6 +114,12 @@ class Hash(BaseModel):
     def as_line(self):
         return f"{self.name}:{self.value}"
 
+    def __str__(self):
+        return json.dumps(self._dump())
+
+    def __repr__(self):
+        return str(self._dump())
+
 
 @dataclass
 class Source(BaseModel):
@@ -131,11 +156,16 @@ class PackageSpecfiers(BaseModel):
 @dataclass
 class Package(BaseModel):
 
-    version: Union[Optional[str],Optional[dict]] = "*"
+    name: str
+    version: Optional[str] = "*"
     specifiers: Optional[PackageSpecfiers] = None
     editable: Optional[bool] = None
     extras: Optional[PackageSpecfiers] = None
     path: Optional[str] = None
+    sys_platform: Optional[str] = None
+    hashes: Optional[List[Hash]] = None
+    markers: Optional[str] = None
+    index: Optional[str] = None
 
     def validate_extras(self, value):
         if value is None:
@@ -168,9 +198,8 @@ class Script(BaseModel):
         self._parts.extend(script[1:])
 
     def validate_script(self, value):
-        if not (isinstance(value, str) or
-                (isinstance(value, list) and all(isinstance(i, str) for i in value))
-                ):
+        if not isinstance(value, str) or \
+                (isinstance(value, list) and all(isinstance(i, str) for i in value)):
             raise ValueError("script must be a string or a list of strings")
 
     def __repr__(self):
@@ -221,18 +250,31 @@ class Script(BaseModel):
 @dataclass
 class PackageCollection(BaseModel):
 
-    packages: List[Package]
+    packages: Dict[str, Package]
 
     def validate_packages(self, value):
         if isinstance(value, dict):
             packages = {}
             for k, v in value.items():
                 if isinstance(v, dict):
-                    packages[k] = Package(**v)
+                    packages[k] = Package(name=k, **v)
+                elif isinstance(v, str):
+                    packages[k] = Package(name=k, version=v)
+                elif isinstance(v, Package):
+                    packages[k] = v
                 else:
-                    packages[k] = Package(version=v)
+                    raise ValidationError(f"Invalid package specifier {k}: {v}")
             return packages
         return value
+
+    def __getitem__(self, item):
+        try:
+            return self.packages[item]
+        except KeyError as exp:
+            raise KeyError(f"Package {item} not found") from exp
+
+    def _dump(self):
+        return {name: asdict(p) for name, p in self.packages.items()}
 
 
 @dataclass
@@ -283,6 +325,9 @@ class SourceCollection(BaseModel):
 
     def __delitem__(self, key):
         del self.sources[key]
+
+    def _dump(self):
+        return [asdict(s) for s in self.sources]
 
 
 @dataclass
