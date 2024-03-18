@@ -44,6 +44,19 @@ class BaseModel:
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name)))
 
+    def __str__(self):
+        return json.dumps(self._dump())
+
+    def __repr__(self):
+        return str(self._dump())
+
+    def _dump(self):
+        return asdict(self)
+
+    def __getitem__(self, key):
+        value = self.__dict__[key]
+        return value
+
 
 @dataclass
 class Hash(BaseModel):
@@ -95,6 +108,12 @@ class Hash(BaseModel):
     def as_line(self):
         return f"{self.name}:{self.value}"
 
+    def __str__(self):
+        return json.dumps(self._dump())
+
+    def __repr__(self):
+        return str(self._dump())
+
 
 @dataclass
 class Source(BaseModel):
@@ -116,13 +135,6 @@ class Source(BaseModel):
         if not isinstance(value, bool):
             raise ValidationError("verify_ssl: must be of boolean type")
         return value
-
-    def dump(self):
-        return {
-            "name": self.name,
-            "verify_ssl": self.verify_ssl,
-            "url": self.url
-        }
 
 
 @dataclass
@@ -180,9 +192,8 @@ class Script(BaseModel):
         self._parts.extend(script[1:])
 
     def validate_script(self, value):
-        if not (isinstance(value, str) or
-                (isinstance(value, list) and all(isinstance(i, str) for i in value))
-                ):
+        if not isinstance(value, str) or \
+                (isinstance(value, list) and all(isinstance(i, str) for i in value)):
             raise ValueError("script must be a string or a list of strings")
 
     def __repr__(self):
@@ -256,6 +267,9 @@ class PackageCollection(BaseModel):
         except KeyError as exp:
             raise KeyError(f"Package {item} not found") from exp
 
+    def _dump(self):
+        return {name: asdict(p) for name, p in self.packages.items()}
+
 
 @dataclass
 class ScriptCollection(BaseModel):
@@ -305,12 +319,6 @@ class SourceCollection(BaseModel):
 
     def __delitem__(self, key):
         del self.sources[key]
-
-    def __str__(self):
-        return json.dumps(self._dump())
-
-    def __repr__(self):
-        return str(self._dump())
 
     def _dump(self):
         return [asdict(s) for s in self.sources]
