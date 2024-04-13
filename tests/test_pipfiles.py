@@ -47,18 +47,19 @@ def test_pipfile_load(tmpdir):
     fi.write(textwrap.dedent("""
         [packages]
         flask = { version = "*" }
-        jinja2 = '*'   # A comment.
+        jinja2 = "*"   # A comment.
     """))
-    p = Pipfile.load(fi)
+    pfile = Pipfile.load(fi)
 
-    assert p.source == SourceCollection([
+    assert pfile.source == SourceCollection([
         {
             'url': 'https://pypi.org/simple',
             'verify_ssl': True,
             'name': 'pypi',
         },
     ])
-    assert p.packages == {
+
+    assert pfile.packages == {
         "flask": {"version": "*"},
         "jinja2": "*",
     }
@@ -70,7 +71,7 @@ def test_pipfile_preserve_format(tmpdir):
         """\
         [packages]
         flask = { version = "*" }
-        jinja2 = '*'
+        jinja2 = "*"
         """,
     ))
     pf= Pipfile.load(fi)
@@ -78,7 +79,8 @@ def test_pipfile_preserve_format(tmpdir):
 
     fo = tmpdir.join("Pipfile.out")
     pf.dump(fo)
-    assert fo.read() == textwrap.dedent(
+    content = fo.read()
+    assert content == textwrap.dedent(
         """\
         [[source]]
         name = "pypi"
@@ -87,6 +89,6 @@ def test_pipfile_preserve_format(tmpdir):
 
         [packages]
         flask = { version = "*" }
-        jinja2 = '*'
+        jinja2 = "*"
         """,
     )

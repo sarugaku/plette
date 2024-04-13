@@ -129,6 +129,7 @@ class Lockfile(BaseModel):
             data = json.load(fh)
         else:
             data = json.loads(fh.read().decode(encoding))
+
         return cls(**data)
 
     @classmethod
@@ -137,24 +138,23 @@ class Lockfile(BaseModel):
             "_meta": {
                 "hash": pipfile.get_hash().__dict__,
                 "pipfile-spec": PIPFILE_SPEC_CURRENT,
-                "requires": _copy_jsonsafe(getattr(pipfile, "requires", {})),
+                "requires": pipfile.requires,
             },
         }
 
         data["_meta"].update(asdict(pipfile.sources))
 
         if categories is None:
-            data["default"] = _copy_jsonsafe(getattr(pipfile, "packages", {}))
-            data["develop"] = _copy_jsonsafe(getattr(pipfile, "dev-packages", {}))
+            data["default"] = pipfile.packages
+            data["develop"] = pipfile.dev_packages
         else:
             for category in categories:
                 if category in ["default", "packages"]:
-                    data["default"] = _copy_jsonsafe(getattr(pipfile,"packages", {}))
+                    data["default"] = getattr(pipfile,"packages", {})
                 elif category in ["develop", "dev-packages"]:
-                    data["develop"] = _copy_jsonsafe(
-                            getattr(pipfile,"dev-packages", {}))
+                    data["develop"] = getattr(pipfile,"dev-packages", {})
                 else:
-                    data[category] = _copy_jsonsafe(getattr(pipfile, category, {}))
+                    data[category] = getattr(pipfile, category, {})
         if "default" not in data:
             data["default"] = {}
         if "develop" not in data:
@@ -182,7 +182,21 @@ class Lockfile(BaseModel):
     def meta(self, value):
         self._meta = value
 
-
     @property
     def dev_packages(self):
         return self.develop
+
+    @property
+    def _data(self):
+        _hash = self.meta.hash.as_dict()
+        sources = self.meta.sources.as_list()
+        packages = self.default.as_dict()
+        requires = self.meta.requires.as_dict()
+        d = asdict(self)
+        d["_meta"]["pipfile-spec"] = d["_meta"].pop("pipfile_spec")
+        d["_meta"]["hash"] = _hash
+        d["_meta"]["requires"] = requires
+        d["develop"] = {} if not d["develop"]["packages"] else d["develop"]["packages"]
+        d["default"] = packages
+        d["_meta"]["sources"] = sources
+        return d

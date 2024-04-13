@@ -28,6 +28,7 @@ def remove_empty_values(d):
         # If the value is None or an empty string, remove the key
         elif value is None or value == '':
             del d[key]
+    return d
 
 
 class BaseModel:
@@ -114,6 +115,9 @@ class Hash(BaseModel):
     def as_line(self):
         return f"{self.name}:{self.value}"
 
+    def as_dict(self):
+        return {self.name: self.value}
+
     def __str__(self):
         return json.dumps(self._dump())
 
@@ -180,9 +184,17 @@ class Package(BaseModel):
         if isinstance(value, str):
             return value
         if value is None:
-            return "*"
+            return "all"
 
         raise ValidationError(f"Unknown type {type(value)} for version")
+
+    def as_dict(self):
+        d = remove_empty_values(asdict(self))
+        if d["version"] == "any":
+            d.pop("version")
+            return {self.name: "*"}
+        name = d.pop("name")
+        return {name: d}
 
 
 @dataclass(init=False)
@@ -258,6 +270,8 @@ class PackageCollection(BaseModel):
             for k, v in value.items():
                 if isinstance(v, dict):
                     packages[k] = Package(name=k, **v)
+                elif isinstance(v, str) and v == "*":
+                    packages[k] = Package(name=k, version="any")
                 elif isinstance(v, str):
                     packages[k] = Package(name=k, version=v)
                 elif isinstance(v, Package):
@@ -274,7 +288,16 @@ class PackageCollection(BaseModel):
             raise KeyError(f"Package {item} not found") from exp
 
     def _dump(self):
-        return {name: asdict(p) for name, p in self.packages.items()}
+        d = {}
+        if self.packages:
+            for name, p in self.packages.items():
+                pkg = p.as_dict()
+                d.update(pkg)
+
+        return d
+
+    def as_dict(self):
+        return self._dump()
 
 
 @dataclass
@@ -329,11 +352,33 @@ class SourceCollection(BaseModel):
     def _dump(self):
         return [asdict(s) for s in self.sources]
 
+    def as_list(self):
+        return self._dump()
+
 
 @dataclass
 class Requires(BaseModel):
+
     python_version: Optional[str] = None
     python_full_version: Optional[str] = None
+
+    def as_dict(self):
+        return remove_empty_values(asdict(self))
+
+    def validate_python_version(self, value):
+        if not value:
+            return value
+        if value is not None and not isinstance(value, str):
+            raise ValueError("python_version must be a string")
+        if value:
+            if re.match(r"^\d+\.\d+$", value):
+                return value
+            raise ValueError("python_version must be a string in the form 'X.Y'")
+
+    def validate_full_python_version(self, value):
+        if value is not None and not isinstance(value, str):
+            raise ValueError("python_version must be a string")
+        return value
 
 
 META_SECTIONS = {
@@ -345,7 +390,6 @@ META_SECTIONS = {
 
 @dataclass
 class PipfileSection(BaseModel):
-
     """
     Dummy pipfile validator that needs to be completed in a future PR
     Hint: many pipfile features are undocumented in pipenv/project.py
@@ -371,7 +415,7 @@ class Meta(BaseModel):
             return Hash.from_line(value)
 
     def validate_requires(self, value):
-        return Requires(value)
+        return Requires(**value)
 
     def validate_sources(self, value):
         return SourceCollection(value)
@@ -380,6 +424,9 @@ class Meta(BaseModel):
         if int(value) != 6:
             raise ValueError('Only pipefile-spec version 6 is supported')
         return value
+
+    def as_dict(self):
+        return remove_empty_values(asdict(self))
 
 
 @dataclass
@@ -398,3 +445,6 @@ class Pipenv(BaseModel):
             raise ValidationError('install_search_all_sources must be a boolean')
 
         return value
+
+    def as_dict(self):
+        return remove_empty_values(asdict(self))

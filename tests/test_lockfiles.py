@@ -146,7 +146,7 @@ def test_lockfile_from_pipfile_meta():
     })
 
     assert lockfile.meta.hash == Hash.from_dict({"sha256": pipfile_hash_value})
-    assert lockfile.meta.requires == Requires(python_version={'python_version': '3.7'}, python_full_version=None)
+    assert lockfile.meta.requires == Requires(**{"python_version": '3.7', "python_full_version": None})
     assert lockfile.meta.sources == SourceCollection([
         {
             "name": "pypi",
