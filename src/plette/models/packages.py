@@ -1,4 +1,4 @@
-from .base import DataView, DataModel, DataValidationError
+from .base import DataModel, DataValidationError
 
 class PackageSpecfiers(DataModel):
     # TODO: one could add here more validation for path editable
