@@ -107,9 +107,13 @@ def test_package_wrong_key():
         p.version
     assert str(ctx.value) == "version"
 
+def test_package_with_wrong_specfiers():
+    with pytest.raises(models.base.DataValidationError) as ctx:
+        _ = models.Package(1.2)
+    assert str(ctx.value) == "invalid type for package: <class 'float'>"
 
 def test_package_with_wrong_extras():
-    with pytest.raises(models.base.ValidationError):
+    with pytest.raises(models.base.DataValidationError):
         p = models.Package({"version": "==1.20.0", "extras": "broker"})
 
 
