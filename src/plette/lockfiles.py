@@ -11,7 +11,36 @@ import collections.abc as collections_abc
 from dataclasses import dataclass, field, asdict
 from typing import Optional
 
-from .models import BaseModel, Meta, PackageCollection, Package, remove_empty_values
+from .models import DataModel, Meta, PackageCollection
+
+
+class _LockFileEncoder(json.JSONEncoder):
+    """A specilized JSON encoder to convert loaded data into a lock file.
+
+    This adds a few characteristics to the encoder:
+
+    * The JSON is always prettified with indents and spaces.
+    * The output is always UTF-8-encoded text, never binary, even on Python 2.
+    """
+    def __init__(self):
+        super(_LockFileEncoder, self).__init__(
+            indent=4, separators=(",", ": "), sort_keys=True,
+        )
+
+    def encode(self, obj):
+        content = super(_LockFileEncoder, self).encode(obj)
+        if not isinstance(content, str):
+            content = content.decode("utf-8")
+        content += "\n"
+        return content
+
+    def iterencode(self, obj):
+        for chunk in super(_LockFileEncoder, self).iterencode(obj):
+            if not isinstance(chunk, str):
+                chunk = chunk.decode("utf-8")
+            yield chunk
+        yield "\n"
+
 
 PIPFILE_SPEC_CURRENT = 6
 
@@ -64,43 +93,25 @@ def _copy_jsonsafe(value):
     return str(value)
 
 
-@dataclass
-class Lockfile(BaseModel):
-    """Representation of a Pipfile.lock."""
-
-    _meta: Optional[Meta]
-    default: Optional[dict] =  field(default_factory=dict)
-    develop: Optional[dict] = field(default_factory=dict)
-
-    def __post_init__(self):
-        """Run validation methods if declared.
-        The validation method can be a simple check
-        that raises ValueError or a transformation to
-        the field value.
-        The validation is performed by calling a function named:
-            `validate_<field_name>(self, value) -> field.type`
-        """
-        super().__post_init__()
-        self.meta = self._meta
-
-    def validate__meta(self, value):
-        return self.validate_meta(value)
-
-    def validate_meta(self, value):
-        if "_meta" in value:
-            value = value["_meta"]
-        if 'pipfile-spec' in value:
-            value['pipfile_spec'] = value.pop('pipfile-spec')
-        return Meta(**value)
-
-    def validate_default(self, value):
-        packages = {}
-        for name, spec in value.items():
-            packages[name] = Package(spec)
-        return packages
+class Lockfile(DataModel):
+    """Representation of a Pipfile.lock.
+    """
+    __SCHEMA__ = {
+        "_meta": {"type": "dict", "required": True},
+        "default": {"type": "dict", "required": True},
+        "develop": {"type": "dict", "required": True},
+    }
 
     @classmethod
-    def load(cls, fh, encoding=None):
+    def validate(cls, data):
+        for key, value in data.items():
+            if key == "_meta":
+                Meta.validate(value)
+            else:
+                PackageCollection.validate(value)
+
+    @classmethod
+    def load(cls, f, encoding=None):
         if encoding is None:
             data = json.load(fh)
         else:

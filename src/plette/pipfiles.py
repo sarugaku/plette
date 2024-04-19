@@ -9,8 +9,7 @@ import tomlkit
 
 
 from .models import (
-    BaseModel,
-    Hash, Requires, PipfileSection, Pipenv,
+    DataModel, Hash, Requires, PipfileSection, Pipenv,
     PackageCollection, ScriptCollection, SourceCollection,
     remove_empty_values
 )
@@ -33,6 +32,10 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 """
 
+class Pipfile(DataModel):
+    """Representation of a Pipfile.
+    """
+    __SCHEMA__ = {}
 
 @dataclass
 class Pipfile(BaseModel):

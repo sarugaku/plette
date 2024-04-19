@@ -6,7 +6,7 @@ __all__ = [
 ]
 
 from .base import (
-    DataView, DataModelCollection, DataModelMapping, DataModelSequence,
+    DataModel, DataModelCollection, DataModelMapping, DataModelSequence,
     validate, DataValidationError,
 )
 
