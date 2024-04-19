@@ -1,15 +1,8 @@
-# pylint: disable=missing-module-docstring,missing-class-docstring
-# pylint: disable=missing-function-docstring
-# pylint: disable=no-member
-
-import dataclasses
 import json
 import numbers
 
 import collections.abc as collections_abc
 
-from dataclasses import dataclass, field, asdict
-from typing import Optional
 
 from .models import DataModel, Meta, PackageCollection
 
@@ -43,40 +36,6 @@ class _LockFileEncoder(json.JSONEncoder):
 
 
 PIPFILE_SPEC_CURRENT = 6
-
-
-def flatten_versions(d):
-    copy = {}
-    # Iterate over a copy of the dictionary
-    for key, value in d.items():
-        # If the key is "version", replace the key with the value
-        copy[key] = value["version"]
-    return copy
-
-
-class DCJSONEncoder(json.JSONEncoder):
-    def default(self, o):
-        if dataclasses.is_dataclass(o):
-            o = dataclasses.asdict(o)
-            if "_meta" in o:
-                o["_meta"]["pipfile-spec"] = o["_meta"].pop("pipfile_spec")
-                o["_meta"]["hash"] = {o["_meta"]["hash"]["name"]: o["_meta"]["hash"]["value"]}
-                o["_meta"]["sources"] = o["_meta"]["sources"].pop("sources")
-
-            remove_empty_values(o)
-
-            for section in ["default", "develop"]:
-                try:
-                    o[section] = flatten_versions(o[section])
-                except KeyError:
-                    continue
-            # add silly default values
-            if "develop" not in o:
-                o["develop"] = {}
-            if "requires" not in o["_meta"]:
-                o["_meta"]["requires"] = {}
-            return o
-        return super().default(o)
 
 
 def _copy_jsonsafe(value):
@@ -113,61 +72,106 @@ class Lockfile(DataModel):
     @classmethod
     def load(cls, f, encoding=None):
         if encoding is None:
-            data = json.load(fh)
+            data = json.load(f)
         else:
-            data = json.loads(fh.read().decode(encoding))
-        return cls(**data)
+            data = json.loads(f.read().decode(encoding))
+        return cls(data)
 
     @classmethod
     def with_meta_from(cls, pipfile, categories=None):
         data = {
             "_meta": {
-                "hash": pipfile.get_hash().__dict__,
+                "hash": _copy_jsonsafe(pipfile.get_hash()._data),
                 "pipfile-spec": PIPFILE_SPEC_CURRENT,
-                "requires": _copy_jsonsafe(getattr(pipfile, "requires", {})),
+                "requires": _copy_jsonsafe(pipfile._data.get("requires", {})),
+                "sources": _copy_jsonsafe(pipfile.sources._data),
             },
         }
-
-        data["_meta"].update(asdict(pipfile.sources))
-
         if categories is None:
-            data["default"] = _copy_jsonsafe(getattr(pipfile, "packages", {}))
-            data["develop"] = _copy_jsonsafe(getattr(pipfile, "dev-packages", {}))
+            data["default"] = _copy_jsonsafe(pipfile._data.get("packages", {}))
+            data["develop"] = _copy_jsonsafe(pipfile._data.get("dev-packages", {}))
         else:
             for category in categories:
-                if category in ["default", "packages"]:
-                    data["default"] = _copy_jsonsafe(getattr(pipfile,"packages", {}))
-                elif category in ["develop", "dev-packages"]:
-                    data["develop"] = _copy_jsonsafe(
-                            getattr(pipfile,"dev-packages", {}))
+                if category == "default" or category == "packages":
+                    data["default"] = _copy_jsonsafe(pipfile._data.get("packages", {}))
+                elif category == "develop" or category == "dev-packages":
+                    data["develop"] = _copy_jsonsafe(pipfile._data.get("dev-packages", {}))
                 else:
-                    data[category] = _copy_jsonsafe(getattr(pipfile, category, {}))
+                    data[category] = _copy_jsonsafe(pipfile._data.get(category, {}))
         if "default" not in data:
-            data["default"] = {}
+            data["default"]  = {}
         if "develop" not in data:
             data["develop"] = {}
         return cls(data)
 
     def __getitem__(self, key):
-        value = self[key]
+        value = self._data[key]
         try:
             if key == "_meta":
-                return Meta(**value)
-            return PackageCollection(value)
+                return Meta(value)
+            else:
+                return PackageCollection(value)
         except KeyError:
             return value
+
+    def __setitem__(self, key, value):
+        if isinstance(value, DataView):
+            self._data[key] = value._data
+        else:
+            self._data[key] = value
 
     def is_up_to_date(self, pipfile):
         return self.meta.hash == pipfile.get_hash()
 
-    def dump(self, fh):
-        json.dump(self, fh, cls=DCJSONEncoder)
-        self.meta = self._meta
+    def dump(self, f, encoding=None):
+        encoder = _LockFileEncoder()
+        if encoding is None:
+            for chunk in encoder.iterencode(self._data):
+                f.write(chunk)
+        else:
+            content = encoder.encode(self._data)
+            f.write(content.encode(encoding))
 
     @property
     def meta(self):
-        return self._meta
+        try:
+            return self["_meta"]
+        except KeyError:
+            raise AttributeError("meta")
 
     @meta.setter
     def meta(self, value):
-        self._meta = value
+        self["_meta"] = value
+
+    @property
+    def _meta(self):
+        try:
+            return self["_meta"]
+        except KeyError:
+            raise AttributeError("meta")
+
+    @_meta.setter
+    def _meta(self, value):
+        self["_meta"] = value
+
+    @property
+    def default(self):
+        try:
+            return self["default"]
+        except KeyError:
+            raise AttributeError("default")
+
+    @default.setter
+    def default(self, value):
+        self["default"] = value
+
+    @property
+    def develop(self):
+        try:
+            return self["develop"]
+        except KeyError:
+            raise AttributeError("develop")
+
+    @develop.setter
+    def develop(self, value):
+        self["develop"] = value
