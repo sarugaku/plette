@@ -1,4 +1,4 @@
-from .base import DataModel, DataViewMapping, DataViewSequence, DataModelSequence
+from .base import DataModel, DataViewMapping, DataModelSequence
 from .hashes import Hash
 from .packages import Package
 from .scripts import Script
