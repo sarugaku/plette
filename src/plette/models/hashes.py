@@ -1,5 +1,5 @@
-from .base import DataModel
-from .base import DataValidationError
+from .base import DataModel, DataValidationError
+
 
 class Hash(DataModel):
     """A hash.

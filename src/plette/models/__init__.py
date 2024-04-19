@@ -7,7 +7,7 @@ __all__ = [
 
 from .base import (
     DataModel, DataModelCollection, DataModelMapping, DataModelSequence,
-    validate, DataValidationError,
+    DataValidationError,
 )
 
 from .hashes import Hash
