@@ -1,15 +1,15 @@
-from .base import DataModel, DataViewMapping, DataModelSequence
+from .base import DataModel, DataModelSequence, DataModelMapping
 from .hashes import Hash
 from .packages import Package
 from .scripts import Script
 from .sources import Source
 
 
-class PackageCollection(DataViewMapping):
+class PackageCollection(DataModelMapping):
     item_class = Package
 
 
-class ScriptCollection(DataViewMapping):
+class ScriptCollection(DataModelMapping):
     item_class = Script
 
 

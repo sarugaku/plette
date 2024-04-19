@@ -55,4 +55,3 @@ class Package(DataModel):
             self._data = value
         else:
             self._data[key] = value
-

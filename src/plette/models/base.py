@@ -137,6 +137,7 @@ class DataViewMapping(DataViewCollection):
         return [(k, self[k]) for k in self._data]
 
 
+
 class DataViewSequence(DataViewCollection):
     """A sequence of data views.
 
@@ -268,3 +269,28 @@ class DataModelSequence(DataModelCollection):
         if isinstance(value, DataView):
             value = value._data
         self._data.append(value)
+
+
+class DataModelMapping(DataModelCollection):
+    """A mapping of data views.
+
+    The keys are primitive values, while values are instances of `item_class`.
+    """
+
+    @classmethod
+    def validate(cls, data):
+        for d in data.values():
+            cls.item_class.validate(d)
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def keys(self):
+        return self._data.keys()
+
+    def values(self):
+        return [self[k] for k in self._data]
+
+    def items(self):
+        return [(k, self[k]) for k in self._data]
+
