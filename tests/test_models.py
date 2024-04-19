@@ -215,14 +215,14 @@ def test_del_slice(sources):
 
 def test_validation_error():
     data = {"name": "test", "url": "https://pypi.org/simple", "verify_ssl": 1}
-    with pytest.raises(models.sources.DataValidationError) as exc_info:
+    with pytest.raises(models.base.DataValidationError) as exc_info:
         models.Source.validate(data)
 
     error_message = str(exc_info.value)
     assert "Invalid type for field verify_ssl: <class 'int'>" in error_message
 
     data = {"name": "test", "verify_ssl": False}
-    with pytest.raises(models.sources.DataValidationError) as exc_info:
+    with pytest.raises(models.base.DataValidationError) as exc_info:
         models.Source.validate(data)
 
     error_message = str(exc_info.value)
