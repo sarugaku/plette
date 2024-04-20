@@ -1,3 +1,5 @@
+import tomlkit
+
 from .base import DataModel, DataValidationError
 
 class PackageSpecfiers(DataModel):
@@ -27,10 +29,7 @@ class Package(DataModel):
 
     @classmethod
     def validate(cls, data):
-        if not isinstance(data, (str, dict)):
-            raise DataValidationError(f"invalid type for package: {type(data)}")
-
-        if isinstance(data, str):
+        if isinstance(data, (str, tomlkit.items.Float, tomlkit.items.Integer)):
             return
         if isinstance(data, dict):
             PackageSpecfiers.validate(data)
@@ -38,7 +37,7 @@ class Package(DataModel):
             raise DataValidationError(f"invalid type for package data: {type(data)}")
 
     def __getattr__(self, key):
-        if isinstance(self._data, str):
+        if isinstance(self._data, (str, tomlkit.items.Float, tomlkit.items.Integer)):
             if key == "version":
                 return self._data
             raise AttributeError(key)
