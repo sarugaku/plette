@@ -1,5 +1,6 @@
 import pytest
 
+from plette.models.base import DataValidationError
 from plette.models import Script
 
 
@@ -10,8 +11,11 @@ def test_parse():
 
 
 def test_parse_error():
-    with pytest.raises(IndexError):
+    with pytest.raises(DataValidationError) as ctx:
         Script('')
+
+    assert str(ctx.value) == "Script cannot be empty", ctx
+
 
 def test_cmdify():
     script = Script(['python', '-c', "print('hello world')"])

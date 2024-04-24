@@ -1,5 +1,7 @@
 import textwrap
 
+import pytest
+
 from plette import Pipfile
 from plette.models import PackageCollection, SourceCollection
 
@@ -25,13 +27,13 @@ def test_source_section_transparent():
         },
     ])
     section[0].verify_ssl = True
-    assert section == SourceCollection([
+    assert section._data == [
         {
             "name": "devpi",
             "url": "https://$USER:$PASS@mydevpi.localhost",
             "verify_ssl": True,
         },
-    ])
+    ]
 
 
 def test_package_section():
@@ -39,7 +41,10 @@ def test_package_section():
         "flask": {"version": "*"},
         "jinja2": "*",
     })
-    assert section.packages["jinja2"].version == "*"
+    assert section["jinja2"].version == "*"
+    with pytest.raises(KeyError) as ctx:
+        section["mosql"]
+    assert str(ctx.value) == repr("mosql")
 
 
 def test_pipfile_load(tmpdir):
@@ -50,18 +55,17 @@ def test_pipfile_load(tmpdir):
         jinja2 = '*'   # A comment.
     """))
     p = Pipfile.load(fi)
-
-    assert p.source == SourceCollection([
+    assert p["source"] == SourceCollection([
         {
             'url': 'https://pypi.org/simple',
             'verify_ssl': True,
             'name': 'pypi',
         },
     ])
-    assert p.packages == {
+    assert p["packages"] == PackageCollection({
         "flask": {"version": "*"},
         "jinja2": "*",
-    }
+    })
 
 
 def test_pipfile_preserve_format(tmpdir):
@@ -73,17 +77,17 @@ def test_pipfile_preserve_format(tmpdir):
         jinja2 = '*'
         """,
     ))
-    pf= Pipfile.load(fi)
-    pf.source[0].verify_ssl = False
+    p = Pipfile.load(fi)
+    p["source"][0].verify_ssl = False
 
     fo = tmpdir.join("Pipfile.out")
-    pf.dump(fo)
+    p.dump(fo)
     assert fo.read() == textwrap.dedent(
         """\
         [[source]]
         name = "pypi"
-        verify_ssl = false
         url = "https://pypi.org/simple"
+        verify_ssl = false
 
         [packages]
         flask = { version = "*" }

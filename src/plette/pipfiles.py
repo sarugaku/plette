@@ -1,23 +1,16 @@
 import hashlib
 import json
 
-from dataclasses import dataclass, asdict
-
-from typing import Optional
-
 import tomlkit
 
-
 from .models import (
-    BaseModel,
-    Hash, Requires, PipfileSection, Pipenv,
+    DataModel, Hash, Requires, PipfileSection, Pipenv,
     PackageCollection, ScriptCollection, SourceCollection,
-    remove_empty_values
 )
 
 
 PIPFILE_SECTIONS = {
-    "sources": SourceCollection,
+    "source": SourceCollection,
     "packages": PackageCollection,
     "dev-packages": PackageCollection,
     "requires": Requires,
@@ -33,56 +26,27 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 """
 
+class Pipfile(DataModel):
+    """Representation of a Pipfile.
+    """
+    __SCHEMA__ = {}
 
-@dataclass
-class Pipfile(BaseModel):
-    """Representation of a Pipfile."""
-    sources: SourceCollection
-    packages: Optional[PackageCollection] = None
-    packages: Optional[PackageCollection] = None
-    dev_packages: Optional[PackageCollection] = None
-    requires: Optional[Requires] = None
-    scripts: Optional[ScriptCollection] = None
-    pipfile: Optional[PipfileSection] = None
-    pipenv: Optional[Pipenv] = None
-
-    def validate_sources(self, value):
-        if isinstance(value, list):
-            return SourceCollection(value)
-        return SourceCollection(value.value)
-
-    def validate_pipenv(self, value):
-        if value is not None:
-            return Pipenv(**value)
-        return value
-
-    def validate_packages(self, value):
-        PackageCollection(value)
-        return value
-
-    def to_dict(self):
-        data = {
-            "_meta": {
-                "requires": getattr(self, "requires", {}),
-            },
-            "default": getattr(self, "packages", {}),
-            "develop": getattr(self, "dev-packages", {}),
-        }
-        data["_meta"].update(asdict(getattr(self, "sources", {})))
-        for category, values in self.__dict__.items():
-            if category in PIPFILE_SECTIONS or category in (
-                    "default", "develop", "pipenv"):
+    @classmethod
+    def validate(cls, data):
+        # HACK: DO NOT CALL `super().validate()` here!!
+        # Cerberus seems to break TOML Kit's inline table preservation if it
+        # is not at the top-level. Fortunately the spec doesn't have nested
+        # non-inlined tables, so we're OK as long as validation is only
+        # performed at section-level. validation is performed.
+        for key, klass in PIPFILE_SECTIONS.items():
+            if key not in data:
                 continue
-            data[category] = values
-        remove_empty_values(data)
-        return data
+            klass.validate(data[key])
 
-    def get_hash(self):
-        data = self.to_dict()
-        content = json.dumps(data, sort_keys=True, separators=(",", ":"))
-        if isinstance(content, str):
-            content = content.encode("utf-8")
-        return Hash.from_hash(hashlib.sha256(content))
+        package_categories = set(data.keys()) - set(PIPFILE_SECTIONS.keys())        
+
+        for category in package_categories:
+            PackageCollection.validate(data[category])
 
     @classmethod
     def load(cls, f, encoding=None):
@@ -98,32 +62,107 @@ class Pipfile(BaseModel):
             sep = "" if content.startswith("\n") else "\n"
             content = DEFAULT_SOURCE_TOML + sep + content
         data = tomlkit.loads(content)
-        data["sources"] = data.pop("source")
-        packages_sections = {}
-        data_sections = list(data.keys())
-        for k in data_sections:
-            if k not in cls.__dataclass_fields__:
-                packages_sections[k] = data.pop(k)
+        return cls(data)
 
-        inst = cls(**data)
-        if packages_sections:
-            for k, v in packages_sections.items():
-                setattr(inst, k, PackageCollection(v))
-        return inst
+    def __getitem__(self, key):
+        value = self._data[key]
+        try:
+            return PIPFILE_SECTIONS[key](value)
+        except KeyError:
+            return value
 
-    @property
-    def source(self):
-        return self.sources
+    def __setitem__(self, key, value):
+        if isinstance(value, DataView):
+            self._data[key] = value._data
+        else:
+            self._data[key] = value
+
+    def get_hash(self):
+        data = {
+            "_meta": {
+                "sources": self._data["source"],
+                "requires": self._data.get("requires", {}),
+            },
+            "default": self._data.get("packages", {}),
+            "develop": self._data.get("dev-packages", {}),
+        }
+        for category, values in self._data.items():
+            if category in PIPFILE_SECTIONS or category in ("default", "develop", "pipenv"):
+                continue
+            data[category] = values
+        content = json.dumps(data, sort_keys=True, separators=(",", ":"))
+        if isinstance(content, str):
+            content = content.encode("utf-8")
+        return Hash.from_hash(hashlib.sha256(content))
 
     def dump(self, f, encoding=None):
-        data = self.to_dict()
-        new_data = {}
-        metadata = data.pop("_meta")
-        new_data["source"] = metadata.pop("sources")
-        new_data["packages"] = data.pop("default")
-        new_data.update(data)
-        content = tomlkit.dumps(new_data)
-
+        content = tomlkit.dumps(self._data)
         if encoding is not None:
             content = content.encode(encoding)
         f.write(content)
+
+    @property
+    def sources(self):
+        try:
+            return self["source"]
+        except KeyError:
+            raise AttributeError("sources")
+
+    @sources.setter
+    def sources(self, value):
+        self["source"] = value
+
+    @property
+    def source(self):
+        try:
+            return self["source"]
+        except KeyError:
+            raise AttributeError("source")
+
+    @source.setter
+    def source(self, value):
+        self["source"] = value
+
+    @property
+    def packages(self):
+        try:
+            return self["packages"]
+        except KeyError:
+            raise AttributeError("packages")
+
+    @packages.setter
+    def packages(self, value):
+        self["packages"] = value
+
+    @property
+    def dev_packages(self):
+        try:
+            return self["dev-packages"]
+        except KeyError:
+            raise AttributeError("dev-packages")
+
+    @dev_packages.setter
+    def dev_packages(self, value):
+        self["dev-packages"] = value
+
+    @property
+    def requires(self):
+        try:
+            return self["requires"]
+        except KeyError:
+            raise AttributeError("requires")
+
+    @requires.setter
+    def requires(self, value):
+        self["requires"] = value
+
+    @property
+    def scripts(self):
+        try:
+            return self["scripts"]
+        except KeyError:
+            raise AttributeError("scripts")
+
+    @scripts.setter
+    def scripts(self, value):
+        self["scripts"] = value
