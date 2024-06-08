@@ -55,7 +55,6 @@ not_skip = ["__init__.py"]
 [tool.pytest.ini_options]
 addopts = "-ra"
 norecursedirs = [".*", "build", "dist", "docs", "news", "tasks"]
-strict = true
 testpaths = ["tests/"]
 
 [tool.towncrier]
