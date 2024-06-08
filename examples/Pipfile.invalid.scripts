@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+myadmin = {path = "admin", editable = true}
+
+[dev-packages]
+pytest = "*"
+
+[tools]
+myadmin = {path = "admin", editable = true}
+
+[requires]
+python_version = "3.12"
+
+[pipenv]
+allow_prereleases = true
+
+[scripts]
+myadmin = 555
