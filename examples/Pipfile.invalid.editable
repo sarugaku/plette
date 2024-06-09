@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 myadmin = {path = "admin", editable = true}
-your-site = {editable = true, path="./site", extras = ["tests", "dev"]}
+your-site = {editable="True", path="./site"}
 
 [dev-packages]
 pytest = "*"
