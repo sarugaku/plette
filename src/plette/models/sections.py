@@ -56,6 +56,10 @@ class PipfileSection(DataModel):
     Hint: many pipfile features are undocumented in  pipenv/project.py
     """
 
+    __schema__ = {
+        "sort_pipfile": bool
+    }
+
     @classmethod
     def validate(cls, data):
         pass
