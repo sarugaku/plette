@@ -31,7 +31,6 @@ tests = [
     "pytest-cov",
     "pytest-xdist",
 ]
-validation = ["cerberus"]
 
 [tool.setuptools]
 include-package-data = false
