@@ -1,9 +1,12 @@
+import datetime
 import textwrap
 
 import pytest
 
 from plette import Pipfile
 from plette.models import PackageCollection, SourceCollection
+from plette.models.sections import Pipenv
+from plette.models.base import DataValidationError
 
 
 def test_source_section():
@@ -66,6 +69,52 @@ def test_pipfile_load(tmpdir):
         "flask": {"version": "*"},
         "jinja2": "*",
     })
+
+
+def test_cool_down_period_valid():
+    section = Pipenv({"cool-down-period": "30d"})
+    assert section.cool_down_period == "30d"
+    assert section.cool_down_period_timedelta == datetime.timedelta(days=30)
+
+
+def test_cool_down_period_none():
+    section = Pipenv({})
+    assert section.cool_down_period is None
+    assert section.cool_down_period_timedelta is None
+
+
+def test_cool_down_period_invalid():
+    with pytest.raises(DataValidationError):
+        Pipenv({"cool-down-period": "30days"})
+    with pytest.raises(DataValidationError):
+        Pipenv({"cool-down-period": "abc"})
+    with pytest.raises(DataValidationError):
+        Pipenv({"cool-down-period": 30})
+
+
+def test_cool_down_period_setter():
+    section = Pipenv({})
+    section.cool_down_period = "7d"
+    assert section.cool_down_period == "7d"
+    assert section.cool_down_period_timedelta == datetime.timedelta(days=7)
+
+
+def test_cool_down_period_setter_invalid():
+    section = Pipenv({})
+    with pytest.raises(DataValidationError):
+        section.cool_down_period = "7days"
+
+
+def test_cool_down_period_in_pipfile(tmpdir):
+    fi = tmpdir.join("Pipfile.in")
+    fi.write(textwrap.dedent("""
+        [pipenv]
+        cool-down-period = "30d"
+    """))
+    p = Pipfile.load(fi)
+    pipenv_section = p["pipenv"]
+    assert pipenv_section.cool_down_period == "30d"
+    assert pipenv_section.cool_down_period_timedelta == datetime.timedelta(days=30)
 
 
 def test_pipfile_preserve_format(tmpdir):

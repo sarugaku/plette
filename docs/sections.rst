@@ -113,3 +113,49 @@ The automatically generated source contains the following data
     You *can* delete either the automatically generated source, or the source
     section itself from the model after it is loaded. Plette assumes you know
     what you’re doing.
+
+
+The ``[pipenv]`` Section
+========================
+
+The ``[pipenv]`` section holds pipenv runtime behaviour settings. Plette
+exposes it through ``pipfile["pipenv"]``, which returns a ``Pipenv`` instance.
+
+
+``cool-down-period``
+--------------------
+
+The ``cool-down-period`` key instructs pipenv to skip re-downloading packages
+that were already fetched within the specified window. Its value must follow
+the format ``"<int>d"``, where the integer is the number of days:
+
+.. code-block:: toml
+
+    [pipenv]
+    cool-down-period = "30d"
+
+Plette validates the format on load and raises ``DataValidationError`` for
+invalid values (e.g. ``"30days"``, ``"abc"``, or a non-string).
+
+Two properties are available on the returned ``Pipenv`` instance:
+
+``cool_down_period``
+    Returns the raw string value (e.g. ``"30d"``), or ``None`` if the key is
+    absent::
+
+        >>> section = pipfile["pipenv"]
+        >>> section.cool_down_period
+        ‘30d’
+
+``cool_down_period_timedelta``
+    Returns the value as a :class:`datetime.timedelta`, or ``None`` if the key
+    is absent::
+
+        >>> section.cool_down_period_timedelta
+        datetime.timedelta(days=30)
+
+The property is also writable, and validates the new value before storing it::
+
+    >>> section.cool_down_period = "7d"
+    >>> section.cool_down_period_timedelta
+    datetime.timedelta(days=7)
