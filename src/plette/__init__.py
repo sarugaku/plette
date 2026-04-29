@@ -3,7 +3,7 @@ __all__ = [
     "Lockfile", "Pipfile",
 ]
 
-__version__ = '2.1.0'
+__version__ = '2.2.0'
 
 from .lockfiles import Lockfile
 from .pipfiles import Pipfile
