@@ -39,6 +39,40 @@ def test_source_section_transparent():
     ]
 
 
+def test_source_section_file_url_no_verify_ssl():
+    # SSL verification is meaningless for a local file:// index, so
+    # verify_ssl may be omitted.
+    section = SourceCollection([
+        {
+            "name": "local",
+            "url": "file:///home/user/local-index",
+        },
+    ])
+    assert len(section) == 1
+    assert section[0].url == "file:///home/user/local-index"
+    assert section[0].verify_ssl is None
+
+
+def test_pipfile_load_file_url_source_no_verify_ssl(tmpdir):
+    fi = tmpdir.join("Pipfile.in")
+    fi.write(textwrap.dedent("""
+        [[source]]
+        name = "local"
+        url = "file:///home/user/local-index"
+
+        [packages]
+        flask = { version = "*" }
+    """))
+    p = Pipfile.load(fi)
+    assert p["source"] == SourceCollection([
+        {
+            "name": "local",
+            "url": "file:///home/user/local-index",
+        },
+    ])
+    assert p["source"][0].verify_ssl is None
+
+
 def test_package_section():
     section = PackageCollection({
         "flask": {"version": "*"},

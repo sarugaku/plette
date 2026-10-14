@@ -61,6 +61,31 @@ def test_source_as_data_expanded_partial(monkeypatch):
     assert s.url_expanded == "https://user:$PASS@mydevpi.localhost"
 
 
+def test_source_from_data_file_url_no_verify_ssl():
+    # verify_ssl is meaningless for local file:// indexes, so it is
+    # optional and may be omitted entirely.
+    s = models.Source(
+        {
+            "name": "local",
+            "url": "file:///home/user/local-index",
+        }
+    )
+    assert s.name == "local"
+    assert s.url == "file:///home/user/local-index"
+    assert s.verify_ssl is None
+
+
+def test_source_file_url_verify_ssl_settable():
+    s = models.Source(
+        {
+            "name": "local",
+            "url": "file:///home/user/local-index",
+        }
+    )
+    s.verify_ssl = False
+    assert s.verify_ssl is False
+
+
 def test_requires_python_version():
     r = models.Requires({"python_version": "8.19"})
     assert r.python_version == "8.19"

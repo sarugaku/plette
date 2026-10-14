@@ -175,12 +175,13 @@ Pipfile Sections in Detail
 ------------
 
 A list of package index entries. Each entry is validated as a ``Source``
-with three required fields:
+with two required fields and one optional field:
 
 - ``name`` — a short identifier for the index
 - ``url`` — the URL of the "simple" package API; environment variables in the
   form ``$VAR`` or ``${VAR}`` are expanded by the ``url_expanded`` property
-- ``verify_ssl`` — whether SSL certificates should be verified (boolean)
+- ``verify_ssl`` *(optional)* — whether SSL certificates should be verified
+  (boolean)
 
 ::
 
@@ -191,6 +192,23 @@ with three required fields:
     'https://pypi.org/simple'
     >>> source.verify_ssl
     True
+
+``verify_ssl`` is meaningless for a local ``file://`` index, since there is
+no SSL handshake to verify. Such sources may omit the field entirely;
+``source.verify_ssl`` then returns ``None`` instead of raising::
+
+    >>> local_source = models.Source({
+    ...     "name": "local",
+    ...     "url": "file:///home/user/local-index",
+    ... })
+    >>> local_source.verify_ssl is None
+    True
+
+.. code-block:: toml
+
+    [[source]]
+    name = "local"
+    url = "file:///home/user/local-index"
 
 
 ``[packages]`` and ``[dev-packages]``
