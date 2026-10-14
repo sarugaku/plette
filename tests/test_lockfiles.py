@@ -120,3 +120,28 @@ def test_lockfile_from_pipfile_meta():
             "verify_ssl": True,
         },
     ]
+
+
+def test_lockfile_from_pipfile_meta_file_url_source_no_verify_ssl():
+    # A local file:// index has no SSL to verify, so verify_ssl can be
+    # omitted and the hash/meta copy should carry that through untouched.
+    pipfile = Pipfile({
+        "source": [
+            {
+                "name": "local",
+                "url": "file:///home/user/local-index",
+            },
+        ],
+        "requires": {
+            "python_version": "3.7",
+        }
+    })
+    lockfile = Lockfile.with_meta_from(pipfile)
+
+    assert lockfile.meta.sources._data == [
+        {
+            "name": "local",
+            "url": "file:///home/user/local-index",
+        },
+    ]
+    assert lockfile.meta.sources[0].verify_ssl is None
