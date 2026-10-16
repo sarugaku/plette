@@ -2,8 +2,6 @@
 plette = { path = '.', extras = ['validation'], editable = true }
 
 [dev-packages]
-invoke = '*'
-parver = '*'
 pytest = '*'
 pytest-cov = '*'
 pytest-xdist = '*'
@@ -14,9 +12,8 @@ twine = '*'
 wheel = '*'
 
 [scripts]
-build = 'setup.py sdist bdist_wheel'
+build = 'python -m build'
 changelog = 'towncrier'
 docs = 'sphinx-build -b html docs docs/_build'
 draft = 'towncrier --draft'
-release = 'inv release'
 tests = 'pytest -v tests'
