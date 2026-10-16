@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel>=0.28.0"]
+requires = ["setuptools>=61.0.0", "setuptools-scm[toml]>=8.0.0", "wheel>=0.28.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -35,6 +35,13 @@ tests = [
 [tool.setuptools]
 include-package-data = false
 zip-safe = true
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+version_file = "src/plette/_version.py"
 
 [tool.distutils.bdist_wheel]
 universal = 1
@@ -53,7 +60,7 @@ not_skip = ["__init__.py"]
 
 [tool.pytest.ini_options]
 addopts = "-ra"
-norecursedirs = [".*", "build", "dist", "docs", "news", "tasks"]
+norecursedirs = [".*", "build", "dist", "docs", "news"]
 testpaths = ["tests/"]
 
 [tool.towncrier]
@@ -62,7 +69,7 @@ filename = 'CHANGELOG.rst'
 issue_format = '`#{issue} <https://github.com/sarugaku/plette/issues/{issue}>`_'
 package = 'plette'
 package_dir = 'src'
-template = 'tasks/CHANGELOG.rst.jinja2'
+template = 'changelog.jinja2'
 title_format = '{version} ({project_date})'
 
   [[tool.towncrier.type]]

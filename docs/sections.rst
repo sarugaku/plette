@@ -20,7 +20,6 @@ contain. Those sections are available for access with the dot notation
     changelog
     docs
     draft
-    release
     tests
 
 Most property names map directly to the section names defined in the
@@ -28,8 +27,6 @@ specification, with dashes replaced by underscored::
 
     >>> for package in pipfile.dev_packages:
     ...     print(package)
-    invoke
-    parver
     towncrier
     twine
     wheel
